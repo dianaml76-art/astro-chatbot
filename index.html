@@ -420,15 +420,45 @@
     }
   }
 
-  // Enviar mensaje
+   // Enviar mensaje (con detección automática de resúmenes descargables)
   async function sendMessage(message, skipAddUser = false) {
     if (!message.trim()) return;
     if (!skipAddUser) addMessage('user', message);
+    
+    // Detectar si el usuario pide un resumen descargable
+    const esResumen = /resumen descargable|resumen en pdf|genera un resumen|resumen de/i.test(message);
+    
     showTyping(true);
-    const reply = await askGroq(message);
+    let reply;
+    if (esResumen) {
+      // Extraer el tema (lo que viene después de "resumen de" o similar)
+      let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
+      if (!tema) tema = "astronomía";
+      // Llamada especial para resumen largo
+      reply = await askGroq(`Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, adecuado para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros. No uses lenguaje técnico complejo.`);
+    } else {
+      reply = await askGroq(message);
+    }
     showTyping(false);
+    
     if (reply) {
       addMessage('bot', reply);
+      if (esResumen) {
+        // Agregar botón de descarga de PDF automáticamente
+        const lastMsg = messagesDiv.lastChild;
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = '📥 Descargar PDF';
+        downloadBtn.style.marginTop = '10px';
+        downloadBtn.style.padding = '6px 12px';
+        downloadBtn.style.borderRadius = '20px';
+        downloadBtn.style.border = 'none';
+        downloadBtn.style.background = '#4a6fa5';
+        downloadBtn.style.color = 'white';
+        downloadBtn.style.cursor = 'pointer';
+        const temaParaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
+        downloadBtn.onclick = () => generatePDF(temaParaPDF, reply);
+        lastMsg.appendChild(downloadBtn);
+      }
     } else {
       addMessage('bot', 'Lo siento, no pude obtener respuesta. Verifica tu Worker.');
     }
