@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>AstroChat · Tutor IA de Astronomía</title>
-  <!-- jsPDF para generar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* ========== ESTILOS ========== */
     * {
       margin: 0;
       padding: 0;
@@ -35,7 +33,6 @@
       padding-bottom: 80px;
     }
 
-    /* Encabezado */
     .header {
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: white;
@@ -43,6 +40,7 @@
       text-align: center;
       border-radius: 0 0 32px 32px;
       box-shadow: var(--shadow);
+      position: relative;
     }
     .header h1 {
       font-size: 1.8rem;
@@ -56,35 +54,19 @@
       opacity: 0.9;
       margin-top: 0.3rem;
     }
-
-    /* Configuración worker */
-    .config-bar {
-      background: white;
-      padding: 0.8rem;
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      border-bottom: 1px solid var(--border);
-    }
-    .config-bar input {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 60px;
-      width: 260px;
-      font-size: 0.85rem;
-    }
-    .config-bar button {
-      background: var(--primary-light);
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 60px;
-      color: white;
+    /* Botón oculto para administradores (doble clic) */
+    .admin-area {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 0.6rem;
+      opacity: 0.3;
       cursor: pointer;
-      font-weight: 500;
+    }
+    .admin-area:hover {
+      opacity: 1;
     }
 
-    /* Área de chat */
     .chat-container {
       max-width: 800px;
       margin: 1rem auto;
@@ -143,7 +125,6 @@
       40%{ transform: scale(1); }
     }
 
-    /* Input */
     .input-area {
       max-width: 800px;
       margin: 0 auto;
@@ -171,7 +152,6 @@
       color: white;
     }
 
-    /* Menú inferior */
     .bottom-menu {
       position: fixed;
       bottom: 0;
@@ -203,14 +183,6 @@
     .menu-item:hover {
       background: var(--border);
     }
-    .menu-item svg {
-      width: 24px;
-      height: 24px;
-      stroke: currentColor;
-      fill: none;
-    }
-
-    /* Botón salir rápido */
     .emergency-btn {
       position: fixed;
       bottom: 90px;
@@ -228,8 +200,6 @@
       z-index: 200;
       box-shadow: var(--shadow);
     }
-
-    /* Modal del juego */
     .modal {
       display: none;
       position: fixed;
@@ -274,12 +244,42 @@
       margin-top: 1rem;
       font-weight: bold;
     }
-
     footer {
       text-align: center;
       font-size: 0.7rem;
       padding: 1rem;
       color: #6c757d;
+    }
+    /* Admin modal */
+    .admin-modal {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background: white;
+      padding: 1.5rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 300;
+      display: none;
+      width: 90%;
+      max-width: 400px;
+    }
+    .admin-modal input {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+    }
+    .admin-modal button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 40px;
+      margin-top: 0.5rem;
+      cursor: pointer;
     }
     @media (max-width: 600px) {
       .message { max-width: 95%; }
@@ -292,11 +292,7 @@
 <div class="header">
   <h1>🚀 AstroChat</h1>
   <p>Tutor IA de Astronomía · Para estudiantes curiosos</p>
-</div>
-
-<div class="config-bar">
-  <input type="text" id="workerUrl" placeholder="URL de tu Cloudflare Worker (ej: https://tu-worker.workers.dev)" size="30">
-  <button id="saveWorkerUrl">Guardar</button>
+  <div class="admin-area" id="adminArea" title="Doble clic para administrador">⚙️</div>
 </div>
 
 <div class="chat-container">
@@ -329,38 +325,31 @@
   </div>
 </div>
 
+<!-- Modal para administrador (cambiar URL) -->
+<div id="adminModal" class="admin-modal">
+  <h3>🔧 Configuración avanzada</h3>
+  <p>URL del Worker (solo cambiar si es necesario):</p>
+  <input type="text" id="adminWorkerUrl" placeholder="https://...workers.dev">
+  <button id="saveAdminUrl">Guardar</button>
+  <button id="closeAdminModal" style="background:#ccc; margin-left:0.5rem;">Cancelar</button>
+</div>
+
 <footer>🔭 Las respuestas son generadas por IA (Groq 70B). Aprende y diviértete.</footer>
 
 <script>
-  // -----------------------------------------
-  // 1. Variables globales y configuración
-  // -----------------------------------------
-  let workerUrl = localStorage.getItem('astroWorkerUrl') || '';
+  // ============================================
+  // CONFIGURACIÓN: URL del Worker (preconfigurada)
+  // ============================================
+  let workerUrl = localStorage.getItem('astroWorkerUrl') || 'https://astro-groq-worker.dianaml76.workers.dev';
+  
   const messagesDiv = document.getElementById('messages');
   const userInput = document.getElementById('userInput');
   const sendBtn = document.getElementById('sendBtn');
-  const workerUrlInput = document.getElementById('workerUrl');
-  const saveWorkerUrlBtn = document.getElementById('saveWorkerUrl');
   
-  let chatHistory = [];  // para mantener contexto
-  let currentSummaryText = ''; // para PDF
+  let chatHistory = [];
+  let currentSummaryText = '';
 
-  // Inicializar campo worker URL
-  if (workerUrl) workerUrlInput.value = workerUrl;
-  
-  // Guardar URL del worker
-  saveWorkerUrlBtn.addEventListener('click', () => {
-    const url = workerUrlInput.value.trim();
-    if (url) {
-      workerUrl = url;
-      localStorage.setItem('astroWorkerUrl', url);
-      addMessage('bot', '✅ URL del Worker guardada. ¡Ya puedes hacer preguntas de astronomía!');
-    } else {
-      alert('Ingresa una URL válida de Cloudflare Worker');
-    }
-  });
-
-  // Función para agregar mensajes al chat
+  // Funciones auxiliares
   function addMessage(role, text) {
     const div = document.createElement('div');
     div.className = `message ${role === 'user' ? 'user' : 'bot'}`;
@@ -368,17 +357,14 @@
     div.innerHTML = `${text}<div class="timestamp">${time}</div>`;
     messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    // Guardar en historial (solo para contexto, no el timestamp)
     if (role === 'user') {
       chatHistory.push({ role: 'user', content: text });
     } else if (role === 'bot') {
       chatHistory.push({ role: 'assistant', content: text });
     }
-    // Mantener solo últimos 10 pares para no saturar tokens
     if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
   }
 
-  // Indicador "escribiendo"
   let typingDiv = null;
   function showTyping(show) {
     if (show && !typingDiv) {
@@ -393,14 +379,16 @@
     }
   }
 
-  // Llamada al Worker
-  async function askGroq(userMessage) {
+  async function askGroq(userMessage, isSummary = false) {
     if (!workerUrl) {
-      addMessage('bot', '⚠️ Primero configura la URL de tu Worker en el campo superior.');
+      addMessage('bot', '⚠️ No se ha configurado la URL del Worker. Contacta al administrador.');
       return null;
     }
-    // Preparar mensajes: incluir historial reciente (sin system, el worker ya lo tiene)
-    const messagesToSend = chatHistory.concat({ role: 'user', content: userMessage });
+    let messagesToSend = chatHistory.concat({ role: 'user', content: userMessage });
+    // Para resúmenes, podemos ajustar el mensaje directamente
+    if (isSummary) {
+      messagesToSend = [{ role: 'user', content: userMessage }];
+    }
     try {
       const response = await fetch(workerUrl, {
         method: 'POST',
@@ -415,36 +403,31 @@
       return data.reply;
     } catch (error) {
       console.error(error);
-      addMessage('bot', '🔌 Error de conexión con el tutor IA. ¿Revisaste que el Worker esté activo y la URL correcta?');
+      addMessage('bot', '🔌 Error de conexión con el tutor IA. Contacta al administrador.');
       return null;
     }
   }
 
-   // Enviar mensaje (con detección automática de resúmenes descargables)
   async function sendMessage(message, skipAddUser = false) {
     if (!message.trim()) return;
     if (!skipAddUser) addMessage('user', message);
     
-    // Detectar si el usuario pide un resumen descargable
+    // Detectar si pide resumen descargable
     const esResumen = /resumen descargable|resumen en pdf|genera un resumen|resumen de/i.test(message);
-    
     showTyping(true);
     let reply;
     if (esResumen) {
-      // Extraer el tema (lo que viene después de "resumen de" o similar)
       let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
       if (!tema) tema = "astronomía";
-      // Llamada especial para resumen largo
-      reply = await askGroq(`Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, adecuado para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros. No uses lenguaje técnico complejo.`);
+      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, adecuado para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros. No uses lenguaje técnico complejo.`;
+      reply = await askGroq(promptResumen, true);
     } else {
       reply = await askGroq(message);
     }
     showTyping(false);
-    
     if (reply) {
       addMessage('bot', reply);
       if (esResumen) {
-        // Agregar botón de descarga de PDF automáticamente
         const lastMsg = messagesDiv.lastChild;
         const downloadBtn = document.createElement('button');
         downloadBtn.textContent = '📥 Descargar PDF';
@@ -460,54 +443,9 @@
         lastMsg.appendChild(downloadBtn);
       }
     } else {
-      addMessage('bot', 'Lo siento, no pude obtener respuesta. Verifica tu Worker.');
+      addMessage('bot', 'Lo siento, no pude obtener respuesta. Contacta al administrador.');
     }
   }
-
-  // Manejador de envío
-  sendBtn.addEventListener('click', () => {
-    const msg = userInput.value.trim();
-    if (msg) {
-      sendMessage(msg);
-      userInput.value = '';
-    }
-  });
-  userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
-
-  // Temas del menú
-  document.querySelectorAll('.menu-item[data-topic]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const topic = btn.getAttribute('data-topic');
-      sendMessage(`Explícame sobre ${topic} de forma divertida y sencilla para un estudiante de secundaria.`);
-    });
-  });
-
-  // Resumen para PDF
-  document.getElementById('summaryBtn').addEventListener('click', async () => {
-    const topic = prompt('¿De qué tema astronómico quieres un resumen de una hoja? (ej: agujeros negros, Marte, telescopios)');
-    if (!topic) return;
-    addMessage('user', `Quiero un resumen de "${topic}" para descargar como PDF, máximo una hoja A4.`);
-    showTyping(true);
-    const reply = await askGroq(`Genera un resumen educativo sobre "${topic}" de máximo 500 palabras, adecuado para estudiantes de 12 a 18 años. Incluye título, puntos clave y conclusión. No uses lenguaje técnico complejo.`);
-    showTyping(false);
-    if (reply) {
-      currentSummaryText = reply;
-      addMessage('bot', reply + '\n\n📎 **Resumen generado. Haz clic en "Descargar PDF" para guardarlo.**');
-      // Agregar botón de descarga dentro del último mensaje (mejor que flotante)
-      const lastMsg = messagesDiv.lastChild;
-      const downloadBtn = document.createElement('button');
-      downloadBtn.textContent = '📥 Descargar PDF';
-      downloadBtn.style.marginTop = '10px';
-      downloadBtn.style.padding = '6px 12px';
-      downloadBtn.style.borderRadius = '20px';
-      downloadBtn.style.border = 'none';
-      downloadBtn.style.background = '#4a6fa5';
-      downloadBtn.style.color = 'white';
-      downloadBtn.style.cursor = 'pointer';
-      downloadBtn.onclick = () => generatePDF(topic, currentSummaryText);
-      lastMsg.appendChild(downloadBtn);
-    }
-  });
 
   function generatePDF(title, content) {
     const { jsPDF } = window.jspdf;
@@ -521,17 +459,26 @@
     doc.save(`resumen_${title.replace(/ /g,'_')}.pdf`);
   }
 
-  // -----------------------------------------
-  // JUEGO INTERACTIVO (quiz)
-  // -----------------------------------------
+  // Menús temáticos
+  document.querySelectorAll('.menu-item[data-topic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const topic = btn.getAttribute('data-topic');
+      sendMessage(`Explícame sobre ${topic} de forma divertida y sencilla para un estudiante de secundaria.`);
+    });
+  });
+
+  document.getElementById('summaryBtn').addEventListener('click', async () => {
+    const topic = prompt('¿De qué tema astronómico quieres un resumen de una hoja? (ej: agujeros negros, Marte, telescopios)');
+    if (!topic) return;
+    sendMessage(`Haz un resumen descargable de ${topic}`);
+  });
+
+  // Juego (quiz)
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
-  let currentQuestions = [];
-  let currentIndex = 0;
-  let score = 0;
+  let currentQuestions = [], currentIndex = 0, score = 0;
   let bestScore = localStorage.getItem('astroBestScore') || 0;
 
-  // Banco de preguntas (al menos 15)
   const questionBank = [
     { text: "¿Cuál es el planeta más grande del Sistema Solar?", options: ["Marte", "Júpiter", "Saturno", "Neptuno"], correct: "Júpiter" },
     { text: "¿Qué estrella es el centro de nuestro sistema planetario?", options: ["Sirio", "Próxima Centauri", "El Sol", "Vega"], correct: "El Sol" },
@@ -561,7 +508,6 @@
 
   function renderQuiz() {
     if (currentIndex >= currentQuestions.length) {
-      // Fin del juego
       const message = `🎉 Has acertado ${score} de ${currentQuestions.length}. ${score > bestScore ? '¡NUEVO RÉCORD!' : ''}`;
       if (score > bestScore) {
         bestScore = score;
@@ -573,12 +519,8 @@
         <button id="newGameBtn" style="margin-top:1rem; background:#2c3e66; color:white; border:none; padding:0.6rem; border-radius:30px; width:100%;">🎮 Nueva partida</button>
         <button id="closeQuizAfter" style="margin-top:0.5rem; background:#ccc; border:none; padding:0.5rem; border-radius:30px;">Cerrar</button>
       `;
-      document.getElementById('newGameBtn')?.addEventListener('click', () => {
-        startNewGame();
-      });
-      document.getElementById('closeQuizAfter')?.addEventListener('click', () => {
-        quizModal.style.display = 'none';
-      });
+      document.getElementById('newGameBtn')?.addEventListener('click', startNewGame);
+      document.getElementById('closeQuizAfter')?.addEventListener('click', () => quizModal.style.display = 'none');
       return;
     }
     const q = currentQuestions[currentIndex];
@@ -589,7 +531,7 @@
     html += `<div class="score-area">Puntuación: ${score} / ${currentQuestions.length}</div>`;
     quizArea.innerHTML = html;
     document.querySelectorAll('.quiz-option').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', () => {
         const selected = btn.getAttribute('data-answer');
         if (selected === q.correct) {
           score++;
@@ -622,27 +564,44 @@
   }
 
   document.getElementById('gameBtn').addEventListener('click', () => {
-    if (!currentQuestions.length || currentIndex >= currentQuestions.length) {
-      startNewGame();
-    }
+    if (!currentQuestions.length || currentIndex >= currentQuestions.length) startNewGame();
     quizModal.style.display = 'flex';
     renderQuiz();
   });
-  document.getElementById('closeQuiz').addEventListener('click', () => {
-    quizModal.style.display = 'none';
-  });
+  document.getElementById('closeQuiz').addEventListener('click', () => quizModal.style.display = 'none');
 
-  // Salir rápido
-  document.getElementById('emergencyBtn').addEventListener('click', () => {
-    window.location.href = 'https://www.google.com';
-  });
+  document.getElementById('emergencyBtn').addEventListener('click', () => window.location.href = 'https://www.google.com');
+  sendBtn.addEventListener('click', () => { const msg = userInput.value.trim(); if (msg) { sendMessage(msg); userInput.value = ''; } });
+  userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
 
-  // Mensaje de bienvenida
+  // Bienvenida
   setTimeout(() => {
     if (chatHistory.length === 0) {
       addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre estrellas, planetas, agujeros negros o usar el menú. ¿Por dónde empezamos?');
     }
   }, 500);
+
+  // ADMIN: doble clic en el ícono de ajustes para cambiar la URL del Worker
+  const adminModal = document.getElementById('adminModal');
+  const adminWorkerUrlInput = document.getElementById('adminWorkerUrl');
+  document.getElementById('adminArea').addEventListener('dblclick', () => {
+    adminWorkerUrlInput.value = workerUrl;
+    adminModal.style.display = 'block';
+  });
+  document.getElementById('saveAdminUrl').addEventListener('click', () => {
+    const newUrl = adminWorkerUrlInput.value.trim();
+    if (newUrl && newUrl.startsWith('https://') && newUrl.includes('.workers.dev')) {
+      workerUrl = newUrl;
+      localStorage.setItem('astroWorkerUrl', newUrl);
+      addMessage('bot', `✅ URL del Worker actualizada a: ${newUrl}`);
+      adminModal.style.display = 'none';
+    } else {
+      alert('URL inválida. Debe empezar con https:// y contener .workers.dev');
+    }
+  });
+  document.getElementById('closeAdminModal').addEventListener('click', () => {
+    adminModal.style.display = 'none';
+  });
 </script>
 </body>
 </html>
