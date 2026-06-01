@@ -7,6 +7,7 @@
   <!-- jsPDF para generar PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    /* ========== ESTILOS ========== */
     * {
       margin: 0;
       padding: 0;
@@ -341,7 +342,7 @@
   const workerUrlInput = document.getElementById('workerUrl');
   const saveWorkerUrlBtn = document.getElementById('saveWorkerUrl');
   
-  let chatHistory = [];  // para mantener contexto (role: user/assistant)
+  let chatHistory = [];  // para mantener contexto
   let currentSummaryText = ''; // para PDF
 
   // Inicializar campo worker URL
@@ -612,21 +613,6 @@
       addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre estrellas, planetas, agujeros negros o usar el menú. ¿Por dónde empezamos?');
     }
   }, 500);
-
-  // Service Worker para offline básico (cache de archivos)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW fallido:', err));
-  }
 </script>
-
-<script>
-  // Service Worker inline? No, mejor creamos un sw.js aparte. Pero lo incluimos como blob para que funcione en un solo archivo.
-  // Para simplificar y que el usuario no requiera otro archivo, haremos un service worker virtual usando blob? 
-  // En producción real es mejor tener sw.js aparte. Como el usuario tiene GitHub puede crearlo. Voy a generar el código del sw separado.
-  // Pero en este index.html añado un script que registra un worker desde un blob solo para demostración (no persistirá tras recarga). 
-  // Para una solución real, recomiendo crear un archivo sw.js aparte. Sin embargo lo incluyo en comentarios.
-  console.log("Para funcionamiento offline real, crea un archivo sw.js en el mismo directorio con el contenido de caché básico.");
-</script>
-
 </body>
 </html>
