@@ -16,173 +16,36 @@
       --border: #cbd7e4;
       --bubble-bot: #f0f4f9;
       --bubble-user: #2c3e66;
-      --suggestion-bg: #ffffffdd;
     }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding-bottom: 80px;
-    }
-    .header {
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: white;
-      padding: 1.2rem 1rem;
-      text-align: center;
-      border-radius: 0 0 32px 32px;
-      position: relative;
-    }
-    .header h1 { font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
-    .header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.3rem; }
-    .admin-area {
-      position: absolute;
-      bottom: 5px; right: 12px;
-      font-size: 0.7rem;
-      opacity: 0.4;
-      cursor: pointer;
-      background: rgba(0,0,0,0.2);
-      padding: 2px 8px;
-      border-radius: 20px;
-    }
-    .admin-area:hover { opacity: 1; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    .header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 1rem; text-align: center; border-radius: 0 0 24px 24px; }
+    .header h1 { font-size: 1.5rem; }
     .chat-container { max-width: 900px; margin: 0.5rem auto; padding: 0 1rem; }
-    .messages {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      max-height: 55vh;
-      overflow-y: auto;
-      padding: 0.5rem 0.2rem;
-    }
-    .message {
-      max-width: 85%;
-      padding: 0.8rem 1rem;
-      border-radius: 20px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    /* Soporte para markdown básico */
-    .bot strong, .bot b { font-weight: 700; color: var(--primary); }
-    .bot em, .bot i { font-style: italic; }
-    .bot ul, .bot ol { margin: 0.5rem 0 0.5rem 1.5rem; }
-    .bot li { margin: 0.2rem 0; }
-    .bot p { margin-bottom: 0.5rem; }
-    .bot { background: var(--bubble-bot); border-left: 4px solid var(--primary-light); align-self: flex-start; }
-    .user { background: var(--bubble-user); color: white; align-self: flex-end; border-radius: 20px 20px 4px 20px; }
-    .timestamp { font-size: 0.65rem; opacity: 0.7; margin-top: 0.4rem; text-align: right; }
-    .typing {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0.6rem 1rem;
-      background: white;
-      border-radius: 30px;
-      width: fit-content;
-      border-left: 3px solid var(--primary-light);
-      font-size: 0.85rem;
-      color: var(--primary);
-    }
-    .dot {
-      width: 8px; height: 8px;
-      background: var(--primary-light);
-      border-radius: 50%;
-      display: inline-block;
-      animation: bounce 1.4s infinite;
-    }
+    .messages { display: flex; flex-direction: column; gap: 0.8rem; max-height: 55vh; overflow-y: auto; padding: 0.5rem 0.2rem; }
+    .message { max-width: 85%; padding: 0.7rem 1rem; border-radius: 20px; line-height: 1.4; word-break: break-word; }
+    .bot { background: white; border-left: 4px solid var(--primary-light); align-self: flex-start; }
+    .user { background: var(--primary); color: white; align-self: flex-end; border-radius: 20px 20px 4px 20px; }
+    .timestamp { font-size: 0.6rem; opacity: 0.7; margin-top: 0.3rem; text-align: right; }
+    .typing { display: flex; align-items: center; gap: 6px; padding: 0.5rem 1rem; background: white; border-radius: 30px; width: fit-content; }
+    .dot { width: 8px; height: 8px; background: var(--primary-light); border-radius: 50%; animation: bounce 1.4s infinite; display: inline-block; }
     @keyframes bounce { 0%,80%,100%{ transform: scale(0); } 40%{ transform: scale(1); } }
-    .input-area {
-      max-width: 900px; margin: 0 auto; padding: 0.5rem 1rem;
-      display: flex; gap: 0.5rem; position: sticky; bottom: 70px;
-      background: var(--bg);
-    }
-    .input-area input {
-      flex: 1; padding: 0.8rem 1rem; border: 1px solid var(--border);
-      border-radius: 60px; background: white; font-size: 1rem;
-    }
-    .input-area button {
-      background: var(--primary); border: none; width: 48px;
-      border-radius: 60px; cursor: pointer; color: white; font-size: 1.2rem;
-    }
-    /* Preguntas sugeridas */
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      justify-content: center;
-      margin: 0.5rem auto;
-      max-width: 900px;
-      padding: 0 1rem;
-    }
-    .suggestion-btn {
-      background: var(--suggestion-bg);
-      border: 1px solid var(--border);
-      border-radius: 40px;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(4px);
-    }
-    .suggestion-btn:hover { background: var(--primary-light); color: white; border-color: var(--primary); }
-    .bottom-menu {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(255,255,255,0.96); backdrop-filter: blur(10px);
-      display: flex; justify-content: space-evenly; align-items: center;
-      padding: 0.4rem 0.2rem;
-      border-top: 1px solid var(--border);
-      z-index: 100;
-      flex-wrap: wrap;
-      gap: 0.2rem;
-    }
-    .menu-item {
-      display: flex; flex-direction: column; align-items: center;
-      background: none; border: none; font-size: 0.65rem;
-      font-weight: 500; color: var(--text);
-      padding: 4px 6px; border-radius: 40px; cursor: pointer;
-      gap: 2px; min-width: 55px;
-    }
-    .menu-item:hover { background: var(--border); }
-    .emergency-btn {
-      position: fixed; bottom: 90px; right: 16px;
-      background: #e07a6a; color: white; border: none;
-      border-radius: 50px; padding: 8px 14px; font-weight: bold;
-      display: flex; align-items: center; gap: 6px; cursor: pointer; z-index: 200;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      font-size: 0.8rem;
-    }
-    .modal, .admin-modal {
-      display: none;
-      position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center; align-items: center;
-      z-index: 1000;
-    }
-    .modal-content, .admin-modal-content {
-      background: white; max-width: 500px; width: 90%;
-      border-radius: 24px; padding: 1.5rem;
-      box-shadow: 0 20px 30px rgba(0,0,0,0.2);
-      max-height: 80vh; overflow-y: auto;
-    }
-    .quiz-question { font-size: 1.2rem; font-weight: bold; margin: 1rem 0; }
-    .quiz-option {
-      display: block; width: 100%; text-align: left;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 60px; padding: 0.7rem 1rem; margin: 0.5rem 0;
-      cursor: pointer;
-    }
-    .quiz-option:hover { background: var(--primary-light); color: white; }
-    .score-area { margin-top: 1rem; font-weight: bold; }
-    .admin-modal-content input { width: 100%; padding: 0.5rem; margin: 0.5rem 0; border-radius: 40px; border: 1px solid var(--border); }
-    footer { text-align: center; font-size: 0.7rem; padding: 1rem; color: #6c757d; }
-    /* Responsive móvil */
+    .input-area { max-width: 900px; margin: 0 auto; padding: 0.5rem 1rem; display: flex; gap: 0.5rem; position: sticky; bottom: 70px; background: var(--bg); }
+    .input-area input { flex: 1; padding: 0.7rem 1rem; border-radius: 60px; border: 1px solid var(--border); background: white; font-size: 0.9rem; }
+    .input-area button { background: var(--primary); border: none; width: 44px; border-radius: 60px; color: white; font-size: 1.2rem; cursor: pointer; }
+    .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.5rem auto; max-width: 900px; padding: 0 1rem; }
+    .suggestion-btn { background: #ffffffcc; border: 1px solid var(--border); border-radius: 40px; padding: 0.3rem 0.7rem; font-size: 0.7rem; cursor: pointer; }
+    .bottom-menu { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(10px); display: flex; justify-content: space-evenly; padding: 0.3rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.2rem; z-index: 100; }
+    .menu-item { display: flex; flex-direction: column; align-items: center; background: none; border: none; font-size: 0.6rem; font-weight: 500; padding: 4px 6px; border-radius: 40px; cursor: pointer; min-width: 50px; }
+    .emergency-btn { position: fixed; bottom: 85px; right: 12px; background: #e07a6a; color: white; border: none; border-radius: 50px; padding: 6px 12px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; gap: 5px; cursor: pointer; z-index: 200; }
+    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; max-width: 500px; width: 90%; border-radius: 24px; padding: 1.2rem; max-height: 80vh; overflow-y: auto; }
+    .quiz-question { font-size: 1.1rem; font-weight: bold; margin: 1rem 0; }
+    .quiz-option { display: block; width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 60px; padding: 0.6rem 1rem; margin: 0.5rem 0; cursor: pointer; }
+    footer { text-align: center; font-size: 0.65rem; padding: 0.8rem; color: #6c757d; }
     @media (max-width: 600px) {
-      .message { max-width: 95%; font-size: 0.9rem; }
-      .bottom-menu .menu-item { font-size: 0.6rem; min-width: 50px; padding: 4px 4px; }
-      .input-area input { font-size: 0.9rem; padding: 0.7rem; }
-      .header h1 { font-size: 1.4rem; }
-      .suggestion-btn { font-size: 0.7rem; }
-      .emergency-btn { bottom: 85px; right: 12px; padding: 6px 12px; font-size: 0.7rem; }
+      .message { max-width: 95%; font-size: 0.85rem; }
+      .menu-item { font-size: 0.55rem; min-width: 45px; }
+      .suggestion-btn { font-size: 0.65rem; }
     }
   </style>
 </head>
@@ -190,18 +53,17 @@
 <div class="header">
   <h1>🚀 AstroChat</h1>
   <p>Tutor IA de Astronomía · Aprende explorando</p>
-  <div class="admin-area" id="adminArea" title="Doble clic para administrador">⚙️</div>
 </div>
+
 <div class="chat-container">
   <div id="messages" class="messages"></div>
-  <div class="suggestions" id="suggestions">
-    <!-- Botones de preguntas sugeridas se generarán dinámicamente -->
-  </div>
+  <div class="suggestions" id="suggestions"></div>
   <div class="input-area">
-    <input type="text" id="userInput" placeholder="Pregunta sobre estrellas, planetas, agujeros negros..." autocomplete="off">
+    <input type="text" id="userInput" placeholder="Pregunta sobre estrellas, planetas..." autocomplete="off">
     <button id="sendBtn">📨</button>
   </div>
 </div>
+
 <div class="bottom-menu">
   <button class="menu-item" data-topic="Sistema Solar">🌍<span>Solar</span></button>
   <button class="menu-item" data-topic="Estrellas">⭐<span>Estrellas</span></button>
@@ -212,12 +74,11 @@
   <button class="menu-item" id="summaryBtn">📄<span>Resumen</span></button>
   <button class="menu-item" id="gameBtn">🎮<span>Juego</span></button>
   <button class="menu-item" id="exportChatBtn">📎<span>Exportar</span></button>
-  <button class="menu-item" id="summarizeChatBtn">📝<span>Resumir chat</span></button>
   <button class="menu-item" id="clearHistoryBtn">🗑️<span>Limpiar</span></button>
 </div>
 <button class="emergency-btn" id="emergencyBtn">🚨 Salir rápido</button>
 
-<!-- Modal del quiz -->
+<!-- Modal quiz -->
 <div id="quizModal" class="modal">
   <div class="modal-content">
     <h2>🔭 Quiz Astronómico</h2>
@@ -226,47 +87,21 @@
   </div>
 </div>
 
-<!-- Modal administrador -->
-<div id="adminModal" class="admin-modal">
-  <div class="admin-modal-content">
-    <h3>🔧 Configuración avanzada</h3>
-    <p>URL del Worker (Cloudflare):</p>
-    <input type="text" id="adminWorkerUrl" placeholder="https://...workers.dev">
-    <button id="saveAdminUrl">Guardar</button>
-    <button id="closeAdminModal" style="background:#ccc; margin-left:0.5rem;">Cancelar</button>
-  </div>
-</div>
-
-<footer>🔭 Respuestas por IA (Groq 70B) · Todas las herramientas son gratuitas</footer>
+<footer>🔭 Respuestas por IA (Groq 70B) · Herramientas gratuitas</footer>
 
 <script>
-  // ========== CONFIGURACIÓN ==========
-  let workerUrl = localStorage.getItem('astroWorkerUrl') || 'https://astro-worker-tu-nombre.tu-subdominio.workers.dev';
+  // ============================================================
+  // URL del Worker de Cloudflare (ya configurada)
+  // ============================================================
+  let workerUrl = 'https://astro-groq-worker.dianaml76.workers.dev/';
+  // ============================================================
+
   const messagesDiv = document.getElementById('messages');
   const userInput = document.getElementById('userInput');
   const sendBtn = document.getElementById('sendBtn');
-  let chatHistory = [];      // almacena {role, content}
-  let streak = 0;            // racha de aciertos en preguntas (no del quiz)
-  
-  // System prompt
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto y entusiasta de astronomía para estudiantes de 12 a 18 años. Hablas español neutro, claro y divertido. Usas analogías sencillas. Explica conceptos como Sistema Solar, estrellas, galaxias, agujeros negros, observación del cielo, misiones espaciales. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀🌙☀️. NUNCA uses emojis de monedas. Puedes usar **negritas**, *cursivas* y listas. Si no sabes algo, admítelo.`;
+  let chatHistory = [];
 
-  // ========== FUNCIONES AUXILIARES ==========
-  function formatMarkdown(text) {
-    // Convertir **negritas**
-    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Convertir *cursivas*
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    // Convertir listas con guiones (- item) a <ul>
-    html = html.replace(/^- (.*?)(\n|$)/gm, '<li>$1</li>');
-    if (html.includes('<li>')) {
-      html = html.replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
-    }
-    // Saltos de línea a <br> o párrafos
-    html = html.replace(/\n\n/g, '</p><p>');
-    if (!html.startsWith('<')) html = '<p>' + html + '</p>';
-    return html;
-  }
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas.`;
 
   function addMessage(role, text, rawMarkdown = true) {
     const div = document.createElement('div');
@@ -274,7 +109,7 @@
     const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     let content = text;
     if (role === 'bot' && rawMarkdown) {
-      content = formatMarkdown(text);
+      content = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
     }
     div.innerHTML = `${content}<div class="timestamp">${time}</div>`;
     messagesDiv.appendChild(div);
@@ -282,7 +117,6 @@
     if (role === 'user') chatHistory.push({ role: 'user', content: text });
     else if (role === 'bot') chatHistory.push({ role: 'assistant', content: text });
     if (chatHistory.length > 50) chatHistory = chatHistory.slice(-50);
-    // Guardar en localStorage
     localStorage.setItem('astroChatHistory', JSON.stringify(chatHistory));
   }
 
@@ -291,40 +125,36 @@
     if (saved) {
       try {
         chatHistory = JSON.parse(saved);
-        // Renderizar mensajes guardados
         for (let msg of chatHistory) {
           const div = document.createElement('div');
           div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-          const time = "—"; // no guardamos hora, ponemos placeholder
           let content = msg.content;
-          if (msg.role === 'assistant') content = formatMarkdown(msg.content);
-          div.innerHTML = `${content}<div class="timestamp">cargado</div>`;
+          if (msg.role === 'assistant') content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          div.innerHTML = `${content}<div class="timestamp">—</div>`;
           messagesDiv.appendChild(div);
         }
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      } catch(e) { console.log("Error cargando historial"); }
+      } catch(e) { console.log('error carga'); }
     }
   }
 
   let typingDiv = null;
-  let typingTimeout = null;
-  function showTyping(show, customText = "Escribiendo") {
+  function showTyping(show, text = "Pensando...") {
     if (show && !typingDiv) {
       typingDiv = document.createElement('div');
       typingDiv.className = 'typing';
-      typingDiv.innerHTML = `<span>${customText}</span><div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
+      typingDiv.innerHTML = `<span>${text}</span><div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
       messagesDiv.appendChild(typingDiv);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     } else if (!show && typingDiv) {
       typingDiv.remove();
       typingDiv = null;
-      if (typingTimeout) clearTimeout(typingTimeout);
     }
   }
 
   async function askGroq(userMessage, isResumen = false) {
     if (!workerUrl) {
-      addMessage('bot', '⚠️ URL del Worker no configurada. Contacta al administrador (doble clic en ⚙️).');
+      addMessage('bot', '⚠️ Error: URL del Worker no configurada. Contacta al administrador.');
       return null;
     }
     let messagesToSend = isResumen ? [{ role: 'user', content: userMessage }] : chatHistory.concat({ role: 'user', content: userMessage });
@@ -339,7 +169,7 @@
       return data.reply;
     } catch (error) {
       console.error(error);
-      addMessage('bot', '🔌 Error de conexión con la IA. Verifica el Worker (doble clic ⚙️).');
+      addMessage('bot', '🔌 Error de conexión. El servicio no está disponible temporalmente.');
       return null;
     }
   }
@@ -348,13 +178,12 @@
     if (!message.trim()) return;
     if (!skipAddUser) addMessage('user', message);
     const esResumen = /resumen descargable|resumen en pdf|genera un resumen|resumen de/i.test(message);
-    // Indicador más realista según tipo
-    showTyping(true, esResumen ? "Generando resumen detallado..." : "Consultando a la IA...");
+    showTyping(true, esResumen ? "Generando resumen..." : "Consultando a la IA...");
     let reply;
     if (esResumen) {
       let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
       if (!tema) tema = "astronomía";
-      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros y listas si es útil. NO uses lenguaje técnico complejo.`;
+      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión.`;
       reply = await askGroq(promptResumen, true);
     } else {
       reply = await askGroq(message);
@@ -364,35 +193,32 @@
       addMessage('bot', reply);
       if (esResumen) {
         const lastMsg = messagesDiv.lastChild;
-        const downloadBtn = document.createElement('button');
-        downloadBtn.textContent = '📥 Descargar PDF';
-        downloadBtn.style.cssText = 'margin-top:10px; padding:6px 12px; border-radius:20px; border:none; background:#4a6fa5; color:white; cursor:pointer;';
-        const temaParaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
-        downloadBtn.onclick = () => generatePDF(temaParaPDF, reply);
-        lastMsg.appendChild(downloadBtn);
+        const btn = document.createElement('button');
+        btn.textContent = '📥 Descargar PDF';
+        btn.style.cssText = 'margin-top:8px; padding:4px 10px; border-radius:20px; border:none; background:#4a6fa5; color:white; cursor:pointer; font-size:0.75rem;';
+        const temaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
+        btn.onclick = () => {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          doc.setFontSize(16);
+          doc.text(`Resumen: ${temaPDF}`, 20, 20);
+          doc.setFontSize(11);
+          const split = doc.splitTextToSize(reply.replace(/<[^>]*>/g, ''), 170);
+          doc.text(split, 20, 35);
+          doc.save(`resumen_${temaPDF.replace(/ /g,'_')}.pdf`);
+        };
+        lastMsg.appendChild(btn);
       }
     } else {
-      addMessage('bot', 'Lo siento, no pude obtener respuesta. Revisa tu conexión o Worker.');
+      addMessage('bot', 'No se pudo obtener respuesta. Inténtalo de nuevo más tarde.');
     }
-  }
-
-  function generatePDF(title, content) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFont('helvetica');
-    doc.setFontSize(18);
-    doc.text(`Resumen: ${title}`, 20, 20);
-    doc.setFontSize(12);
-    const splitText = doc.splitTextToSize(content.replace(/<[^>]*>/g, ''), 170);
-    doc.text(splitText, 20, 35);
-    doc.save(`resumen_${title.replace(/ /g,'_')}.pdf`);
   }
 
   function exportChatToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text("Conversación con AstroChat", 20, 20);
+    doc.text("Conversación AstroChat", 20, 20);
     let y = 35;
     for (let msg of chatHistory) {
       if (y > 270) { doc.addPage(); y = 20; }
@@ -404,85 +230,23 @@
     doc.save("chat_astronomia.pdf");
   }
 
-  async function summarizeChat() {
-    if (chatHistory.length === 0) {
-      addMessage('bot', 'No hay conversación para resumir aún.');
-      return;
-    }
-    const historialTexto = chatHistory.map(m => `${m.role === 'user' ? 'Usuario' : 'Tutor'}: ${m.content}`).join('\n');
-    const promptResumenChat = `Resume la siguiente conversación entre un estudiante y un tutor de astronomía. Extrae los temas principales, preguntas clave y respuestas destacadas. El resumen debe ser claro y educativo, máximo 300 palabras.\n\n${historialTexto}`;
-    showTyping(true, "Resumiendo la conversación...");
-    const resumen = await askGroq(promptResumenChat, true);
-    showTyping(false);
-    if (resumen) addMessage('bot', "📋 **Resumen de la conversación:**\n\n" + resumen);
-    else addMessage('bot', 'No se pudo generar el resumen.');
-  }
-
-  function shareChatLink() {
-    const data = encodeURIComponent(JSON.stringify(chatHistory.slice(-20)));
-    const url = `${window.location.origin}${window.location.pathname}?share=${data}`;
-    navigator.clipboard.writeText(url);
-    addMessage('bot', '✅ Enlace copiado al portapapeles. Pégalo en otro navegador para compartir la conversación.');
-  }
-
-  function loadSharedChat() {
-    const params = new URLSearchParams(window.location.search);
-    const shared = params.get('share');
-    if (shared) {
-      try {
-        const sharedHistory = JSON.parse(decodeURIComponent(shared));
-        if (Array.isArray(sharedHistory) && sharedHistory.length) {
-          chatHistory = sharedHistory;
-          localStorage.setItem('astroChatHistory', JSON.stringify(chatHistory));
-          messagesDiv.innerHTML = '';
-          for (let msg of chatHistory) {
-            const div = document.createElement('div');
-            div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-            let content = msg.content;
-            if (msg.role === 'assistant') content = formatMarkdown(msg.content);
-            div.innerHTML = `${content}<div class="timestamp">compartido</div>`;
-            messagesDiv.appendChild(div);
-          }
-          addMessage('bot', '📎 Conversación cargada desde enlace compartido.');
-        }
-      } catch(e) { console.log("error al cargar compartido"); }
-    }
-  }
-
-  // ========== QUIZ MEJORADO (30 preguntas) ==========
+  // Juego
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
-  let currentQuestions = [], currentIndex = 0, score = 0, quizStreak = 0;
+  let currentQuestions = [], currentIndex = 0, score = 0;
   let bestScore = localStorage.getItem('astroBestScore') || 0;
   const questionBank = [
-    { text: "¿Cuál es el planeta más grande del Sistema Solar?", options: ["Marte", "Júpiter", "Saturno", "Neptuno"], correct: "Júpiter" },
-    { text: "¿Qué estrella es el centro de nuestro sistema planetario?", options: ["Sirio", "Próxima Centauri", "El Sol", "Vega"], correct: "El Sol" },
-    { text: "¿Qué galaxia es la vecina más cercana a la Vía Láctea?", options: ["Andrómeda", "Triángulo", "Remolino", "Ojo de Cerradura"], correct: "Andrómeda" },
-    { text: "¿Qué es un agujero negro?", options: ["Una estrella muerta", "Una región con gravedad extrema", "Un planeta oscuro", "Una nube de gas"], correct: "Una región con gravedad extrema" },
-    { text: "Temperatura superficie del Sol?", options: ["5,500 °C", "15 millones °C", "1,000 °C", "100 °C"], correct: "5,500 °C" },
-    { text: "Telescopio espacial famoso desde 1990?", options: ["Hubble", "James Webb", "Spitzer", "Kepler"], correct: "Hubble" },
-    { text: "Número de planetas (sin Plutón)?", options: ["7","8","9","10"], correct: "8" },
-    { text: "Primer humano en la Luna?", options: ["Apolo 11", "Artemis 1", "Gemini 4", "Sputnik"], correct: "Apolo 11" },
-    { text: "¿Qué es una supernova?", options: ["Explosión estelar", "Cometa gigante", "Luna nueva", "Agujero de gusano"], correct: "Explosión estelar" },
-    { text: "Planeta 'gigante gaseoso' azul verdoso?", options: ["Urano", "Júpiter", "Saturno", "Neptuno"], correct: "Neptuno" },
-    { text: "Fenómeno cuando Luna entre Sol y Tierra?", options: ["Eclipse solar", "Eclipse lunar", "Marea alta", "Aurora"], correct: "Eclipse solar" },
-    { text: "Objeto con anillos visibles?", options: ["Saturno", "Nebulosa", "Galaxia", "Cometa"], correct: "Saturno" },
-    { text: "Estrella más cercana al Sol?", options: ["Próxima Centauri", "Alfa Centauri", "Barnard", "Sirio"], correct: "Próxima Centauri" },
-    { text: "Misión que estudia subsuelo de Marte?", options: ["InSight", "Perseverance", "Curiosity", "Mars Express"], correct: "InSight" },
-    { text: "Planeta más caliente (atmósfera densa)?", options: ["Venus", "Mercurio", "Marte", "Júpiter"], correct: "Venus" },
-    // Nuevas preguntas
-    { text: "¿Cuánto dura un día en Venus (rotación)?", options: ["243 días terrestres", "24 horas", "365 días", "687 días"], correct: "243 días terrestres" },
-    { text: "¿Qué misión llevó el rover Perseverance a Marte?", options: ["Mars 2020", "ExoMars", "Curiosity", "Opportunity"], correct: "Mars 2020" },
-    { text: "¿Cuál es la luna más grande de Júpiter?", options: ["Ganímedes", "Europa", "Ío", "Calisto"], correct: "Ganímedes" },
-    { text: "¿Qué estrella explotará como supernova en los próximos miles de años (visible desde la Tierra)?", options: ["Betelgeuse", "Sirio", "Polaris", "Alpha Centauri"], correct: "Betelgeuse" },
-    { text: "¿Qué telescopio espacial sucede al Hubble?", options: ["James Webb", "Spitzer", "Kepler", "Chandra"], correct: "James Webb" },
-    { text: "Nombre del primer satélite artificial?", options: ["Sputnik 1", "Explorer 1", "Vanguard 1", "Luna 1"], correct: "Sputnik 1" },
-    { text: "¿Qué planeta tiene el sistema de anillos más grande y complejo?", options: ["Saturno", "Júpiter", "Urano", "Neptuno"], correct: "Saturno" },
-    { text: "¿Qué fenómeno ocurre cuando la Luna se oscurece por la sombra de la Tierra?", options: ["Eclipse lunar", "Eclipse solar", "Marea baja", "Luna roja"], correct: "Eclipse lunar" },
-    { text: "¿Qué galaxia es la más cercana a la nuestra (enana)?", options: ["Nube de Magallanes", "Andrómeda", "Triángulo", "Remolino"], correct: "Nube de Magallanes" },
-    { text: "¿Quién fue el primer ser humano en pisar la Luna?", options: ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Michael Collins"], correct: "Neil Armstrong" }
+    { text: "¿Planeta más grande?", options: ["Marte","Júpiter","Saturno","Neptuno"], correct: "Júpiter" },
+    { text: "¿Estrella central?", options: ["Sirio","Próxima Centauri","El Sol","Vega"], correct: "El Sol" },
+    { text: "¿Galaxia vecina?", options: ["Andrómeda","Triángulo","Remolino"], correct: "Andrómeda" },
+    { text: "¿Qué es un agujero negro?", options: ["Estrella muerta","Gravedad extrema","Planeta oscuro"], correct: "Gravedad extrema" },
+    { text: "Temperatura del Sol?", options: ["5,500°C","15M°C","1,000°C"], correct: "5,500°C" },
+    { text: "Telescopio famoso?", options: ["Hubble","James Webb","Spitzer"], correct: "Hubble" },
+    { text: "¿Cuántos planetas (sin Plutón)?", options: ["7","8","9"], correct: "8" },
+    { text: "Primer humano en la Luna?", options: ["Apolo 11","Artemis 1","Gemini 4"], correct: "Apolo 11" },
+    { text: "Supernova es...", options: ["Explosión estelar","Cometa","Luna nueva"], correct: "Explosión estelar" },
+    { text: "Planeta más caliente?", options: ["Venus","Mercurio","Marte"], correct: "Venus" }
   ];
-
   function getRandomQuestions(n) {
     const shuffled = [...questionBank];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -491,83 +255,58 @@
     }
     return shuffled.slice(0, n);
   }
-
   function renderQuiz() {
     if (currentIndex >= currentQuestions.length) {
-      const message = `🎉 Has acertado ${score} de ${currentQuestions.length}. ${score > bestScore ? '¡NUEVO RÉCORD!' : ''}`;
+      const msg = `🎉 Acertaste ${score} de ${currentQuestions.length}. ${score > bestScore ? '¡NUEVO RÉCORD!' : ''}`;
       if (score > bestScore) { bestScore = score; localStorage.setItem('astroBestScore', bestScore); }
-      quizArea.innerHTML = `
-        <div class="score-area">${message}</div>
-        <div>Mejor puntuación histórica: ${bestScore}/${currentQuestions.length}</div>
-        <div>🏆 Rachas acumuladas: ${quizStreak}</div>
-        <button id="newGameBtn" style="margin-top:1rem; background:#2c3e66; color:white; border:none; padding:0.6rem; border-radius:30px; width:100%;">🎮 Nueva partida</button>
-        <button id="closeQuizAfter" style="margin-top:0.5rem; background:#ccc; border:none; padding:0.5rem; border-radius:30px;">Cerrar</button>
-      `;
+      quizArea.innerHTML = `<div>${msg}</div><div>Mejor: ${bestScore}</div><button id="newGameBtn" style="margin-top:1rem; background:#2c3e66; color:white; border:none; padding:0.5rem; border-radius:30px;">Nueva partida</button><button id="closeQuizAfter" style="margin-top:0.5rem;">Cerrar</button>`;
       document.getElementById('newGameBtn')?.addEventListener('click', startNewGame);
       document.getElementById('closeQuizAfter')?.addEventListener('click', () => quizModal.style.display = 'none');
       return;
     }
     const q = currentQuestions[currentIndex];
     let html = `<div class="quiz-question">${q.text}</div>`;
-    q.options.forEach(opt => { html += `<button class="quiz-option" data-answer="${opt}">${opt}</button>`; });
-    html += `<div class="score-area">Puntuación: ${score} / ${currentQuestions.length}</div>`;
+    q.options.forEach(opt => html += `<button class="quiz-option" data-answer="${opt}">${opt}</button>`);
+    html += `<div>Puntuación: ${score}/${currentQuestions.length}</div>`;
     quizArea.innerHTML = html;
     document.querySelectorAll('.quiz-option').forEach(btn => {
       btn.onclick = () => {
-        const selected = btn.getAttribute('data-answer');
-        if (selected === q.correct) { score++; quizStreak++; addTemporaryFeedback("✅ ¡Correcto! +1 racha"); }
-        else { quizStreak = 0; addTemporaryFeedback(`❌ Incorrecto. Respuesta: ${q.correct}`); }
+        if (btn.getAttribute('data-answer') === q.correct) { score++; addFeedback("✅ Correcto!"); }
+        else { addFeedback(`❌ Incorrecto. Respuesta: ${q.correct}`); }
         currentIndex++;
         renderQuiz();
       };
     });
   }
+  function addFeedback(msg) { const fb = document.createElement('div'); fb.textContent = msg; fb.style.padding='0.3rem'; fb.style.background='#eef2f5'; fb.style.margin='0.5rem 0'; fb.style.borderRadius='20px'; quizArea.appendChild(fb); setTimeout(()=>fb.remove(), 1000); }
+  function startNewGame() { currentQuestions = getRandomQuestions(5); currentIndex = 0; score = 0; renderQuiz(); }
 
-  function addTemporaryFeedback(msg) {
-    const fb = document.createElement('div'); fb.textContent = msg; fb.style.padding='0.5rem'; fb.style.background='#eef2f5'; fb.style.margin='0.5rem 0'; fb.style.borderRadius='20px';
-    quizArea.appendChild(fb); setTimeout(()=>fb.remove(), 1200);
-  }
-  function startNewGame() { currentQuestions = getRandomQuestions(5); currentIndex = 0; score = 0; quizStreak = 0; renderQuiz(); }
+  // Eventos
+  sendBtn.onclick = () => { const msg = userInput.value.trim(); if(msg) { sendMessage(msg); userInput.value = ''; } };
+  userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
+  document.querySelectorAll('.menu-item[data-topic]').forEach(btn => {
+    btn.onclick = () => sendMessage(`Explícame sobre ${btn.getAttribute('data-topic')} de forma divertida.`);
+  });
+  document.getElementById('summaryBtn').onclick = () => { const t = prompt('¿Tema del resumen?'); if(t) sendMessage(`Haz un resumen descargable de ${t}`); };
+  document.getElementById('gameBtn').onclick = () => { if (!currentQuestions.length) startNewGame(); quizModal.style.display = 'flex'; renderQuiz(); };
+  document.getElementById('closeQuiz').onclick = () => quizModal.style.display = 'none';
+  document.getElementById('exportChatBtn').onclick = () => exportChatToPDF();
+  document.getElementById('clearHistoryBtn').onclick = () => { if(confirm("Borrar historial?")) { chatHistory = []; localStorage.removeItem('astroChatHistory'); messagesDiv.innerHTML = ''; addMessage('bot', 'Historial borrado.'); } };
+  document.getElementById('emergencyBtn').onclick = () => window.location.href = 'https://www.google.com';
 
-  // ========== EVENTOS ==========
-  function init() {
-    loadHistory();
-    loadSharedChat();
-    // Preguntas sugeridas
-    const suggestionsDiv = document.getElementById('suggestions');
-    const preguntas = ["¿Qué es un agujero negro?", "¿Cómo se forma una estrella?", "¿Cuál es la diferencia entre meteoro y meteorito?", "¿Por qué Marte es rojo?"];
-    preguntas.forEach(q => {
-      const btn = document.createElement('button');
-      btn.textContent = q;
-      btn.className = 'suggestion-btn';
-      btn.onclick = () => sendMessage(q);
-      suggestionsDiv.appendChild(btn);
-    });
-    // Botones
-    sendBtn.onclick = () => { const msg = userInput.value.trim(); if(msg) { sendMessage(msg); userInput.value = ''; } };
-    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
-    document.querySelectorAll('.menu-item[data-topic]').forEach(btn => {
-      btn.onclick = () => sendMessage(`Explícame sobre ${btn.getAttribute('data-topic')} de forma divertida para estudiantes.`);
-    });
-    document.getElementById('summaryBtn').onclick = () => { const t = prompt('¿Tema del resumen?'); if(t) sendMessage(`Haz un resumen descargable de ${t}`); };
-    document.getElementById('gameBtn').onclick = () => { if (!currentQuestions.length) startNewGame(); quizModal.style.display = 'flex'; renderQuiz(); };
-    document.getElementById('closeQuiz').onclick = () => quizModal.style.display = 'none';
-    document.getElementById('exportChatBtn').onclick = () => exportChatToPDF();
-    document.getElementById('summarizeChatBtn').onclick = () => summarizeChat();
-    document.getElementById('clearHistoryBtn').onclick = () => { if(confirm("Borrar toda la conversación?")) { chatHistory = []; localStorage.removeItem('astroChatHistory'); messagesDiv.innerHTML = ''; addMessage('bot', 'Historial borrado. ¡Empieza de nuevo!'); } };
-    document.getElementById('emergencyBtn').onclick = () => window.location.href = 'https://www.google.com';
-    // Admin
-    const adminModal = document.getElementById('adminModal');
-    const adminWorkerUrlInput = document.getElementById('adminWorkerUrl');
-    document.getElementById('adminArea').ondblclick = () => { adminWorkerUrlInput.value = workerUrl; adminModal.style.display = 'flex'; };
-    document.getElementById('saveAdminUrl').onclick = () => { const newUrl = adminWorkerUrlInput.value.trim(); if(newUrl && newUrl.startsWith('https://') && newUrl.includes('.workers.dev')) { workerUrl = newUrl; localStorage.setItem('astroWorkerUrl', newUrl); addMessage('bot', `✅ Worker actualizado a ${newUrl}`); adminModal.style.display = 'none'; } else alert('URL inválida'); };
-    document.getElementById('closeAdminModal').onclick = () => adminModal.style.display = 'none';
-    // Compartir chat (botón extra en menú ya está, pero añadimos listener para enlace)
-    const shareBtn = document.createElement('button'); shareBtn.className = 'menu-item'; shareBtn.id = 'shareChatBtn'; shareBtn.innerHTML = '🔗<span>Compartir</span>';
-    document.querySelector('.bottom-menu').appendChild(shareBtn);
-    shareBtn.onclick = () => shareChatLink();
-  }
-  init();
+  // Preguntas sugeridas
+  const suggestionsDiv = document.getElementById('suggestions');
+  ['¿Qué es un agujero negro?', '¿Cómo se forma una estrella?', '¿Por qué Marte es rojo?', '¿Qué es la Vía Láctea?'].forEach(q => {
+    const btn = document.createElement('button');
+    btn.textContent = q;
+    btn.className = 'suggestion-btn';
+    btn.onclick = () => sendMessage(q);
+    suggestionsDiv.appendChild(btn);
+  });
+
+  // Inicializar
+  loadHistory();
+  addMessage('bot', '🌌 ¡Hola! Soy AstroChat. Pregúntame sobre el universo o usa el menú.');
 </script>
 </body>
 </html>
