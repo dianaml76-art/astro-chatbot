@@ -34,7 +34,6 @@
     .input-area button { background: var(--primary); border: none; width: 44px; border-radius: 60px; color: white; font-size: 1.2rem; cursor: pointer; }
     .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.5rem auto; max-width: 900px; padding: 0 1rem; }
     .suggestion-btn { background: #ffffffcc; border: 1px solid var(--border); border-radius: 40px; padding: 0.3rem 0.7rem; font-size: 0.7rem; cursor: pointer; }
-    /* Menú inferior solo con los botones útiles */
     .bottom-menu {
       position: fixed;
       bottom: 0;
@@ -140,7 +139,6 @@
   </div>
 </div>
 
-<!-- Menú inferior: solo los botones solicitados -->
 <div class="bottom-menu">
   <button class="menu-item" id="gameBtn">🎮<span>Juego</span></button>
   <button class="menu-item" id="summaryBtn">📄<span>Resumen</span></button>
@@ -150,7 +148,6 @@
 
 <button class="emergency-btn" id="emergencyBtn">🚨 Salir rápido</button>
 
-<!-- Modal del quiz interactivo -->
 <div id="quizModal" class="modal">
   <div class="modal-content">
     <h2>🔭 Quiz Astronómico</h2>
@@ -163,7 +160,7 @@
 
 <script>
   // ============================================================
-  // URL del Worker (ya configurada, no tocar)
+  // URL del Worker (ya configurada)
   // ============================================================
   const WORKER_URL = 'https://astro-groq-worker.dianaml76.workers.dev/';
   let workerUrl = WORKER_URL;
@@ -173,17 +170,12 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  // System prompt para generar tests en formato vertical con respuestas al final
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas.
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas. Cuando el estudiante pida un test, genera 5 preguntas de opción múltiple con su respuesta correcta al final.`;
 
-  Cuando un estudiante te pida un test, un quiz, un examen o preguntas (ejemplo: "hazme un test de estrellas", "quisiera un quiz", "evalúame sobre galaxias"), debes generar 5 preguntas de opción múltiple relacionadas con el tema solicitado. Cada pregunta debe aparecer en una línea separada con su número, y debajo de cada pregunta coloca las opciones en líneas diferentes, cada una precedida por una letra (a, b, c, d). No uses formato de lista horizontal. Al final del test, agrega un bloque separado con las respuestas correctas (ejemplo: "Respuestas correctas: 1a, 2c, 3b, 4d, 5a"). No incluyas las respuestas dentro de las preguntas. Asegúrate de que el formato sea claro y vertical.`;
-
-  // Función para limpiar completamente el chat (sin restos)
   function clearChatCompletely() {
     chatHistory = [];
     messagesDiv.innerHTML = '';
     localStorage.removeItem('astroChatHistory');
-    // Mostrar solo el mensaje de bienvenida
     addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre astronomía, pedirme un test, resúmenes, o usar los botones del menú. ¿Por dónde empezamos?');
   }
 
@@ -240,6 +232,80 @@
     }
   }
 
+  // Función mejorada para generar PDF profesional
+  function generatePDF(title, content) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20; // márgenes laterales superior e inferior
+    let y = margin + 10; // posición Y inicial después del título
+
+    // Configurar fuentes y colores
+    doc.setFont('helvetica');
+    
+    // --- Título con icono y color azul ---
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 102); // azul oscuro #2c3e66
+    doc.text(`🚀 ${title}`, margin, y);
+    y += 10;
+    
+    // Línea decorativa debajo del título
+    doc.setDrawColor(74, 111, 165); // azul medio
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+    
+    // --- Contenido: texto en gris oscuro, tamaño 11, normal ---
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51); // gris oscuro #333333
+    
+    // Limpiar el contenido: eliminar etiquetas HTML y caracteres especiales
+    let cleanText = content.replace(/<[^>]*>/g, '')      // eliminar HTML
+                           .replace(/&nbsp;/g, ' ')
+                           .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+                           .replace(/\s+/g, ' ')
+                           .trim();
+    
+    // Dividir el texto en líneas respetando el ancho de página (márgenes)
+    const maxWidth = pageWidth - margin * 2;
+    const lines = doc.splitTextToSize(cleanText, maxWidth);
+    
+    // Escribir línea por línea con control de salto de página
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Si la línea actual sobrepasa la página, crear nueva página
+      if (y + 7 > pageHeight - margin) {
+        doc.addPage();
+        y = margin + 5;
+        // Restablecer color y fuente en nueva página
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 51, 51);
+      }
+      doc.text(line, margin, y);
+      y += 7; // interlineado
+    }
+    
+    // --- Pie de página (nombre del chatbot y fecha) ---
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      const footerText = `AstroChat - Resumen generado el ${new Date().toLocaleDateString()}`;
+      doc.text(footerText, margin, pageHeight - 10);
+      // Número de página
+      doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin - 20, pageHeight - 10);
+    }
+    
+    // Guardar PDF
+    doc.save(`resumen_${title.replace(/ /g, '_')}.pdf`);
+  }
+
   async function sendMessage(message, skipAddUser = false) {
     if (!message.trim()) return;
     if (!skipAddUser) addMessage('user', message);
@@ -250,7 +316,7 @@
     if (esResumen) {
       let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
       if (!tema) tema = "astronomía";
-      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión.`;
+      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros. No uses lenguaje técnico complejo.`;
       reply = await askGroq(promptResumen, true);
     } else {
       reply = await askGroq(message);
@@ -261,20 +327,10 @@
       if (esResumen) {
         const lastMsg = messagesDiv.lastChild;
         const btn = document.createElement('button');
-        btn.textContent = '📥 Descargar PDF';
+        btn.textContent = '📥 Descargar PDF (versión mejorada)';
         btn.style.cssText = 'margin-top:8px; padding:4px 10px; border-radius:20px; border:none; background:#4a6fa5; color:white; cursor:pointer; font-size:0.75rem;';
         const temaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
-        btn.onclick = () => {
-          const { jsPDF } = window.jspdf;
-          const doc = new jsPDF();
-          doc.setFontSize(16);
-          doc.text(`Resumen: ${temaPDF}`, 20, 20);
-          doc.setFontSize(11);
-          let cleanText = reply.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
-          const split = doc.splitTextToSize(cleanText, 170);
-          doc.text(split, 20, 35);
-          doc.save(`resumen_${temaPDF.replace(/ /g,'_')}.pdf`);
-        };
+        btn.onclick = () => generatePDF(temaPDF, reply);
         lastMsg.appendChild(btn);
       }
     } else {
@@ -288,19 +344,42 @@
       return;
     }
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Conversación AstroChat", 20, 20);
-    let y = 35;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const margin = 20;
+    let y = margin + 10;
+    doc.setFont('helvetica');
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 102);
+    doc.text('Conversación con AstroChat', margin, y);
+    y += 10;
+    doc.setDrawColor(74, 111, 165);
+    doc.line(margin, y, doc.internal.pageSize.getWidth() - margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
     for (let msg of chatHistory) {
-      if (y > 270) { doc.addPage(); y = 20; }
-      const prefix = msg.role === 'user' ? "👤 Tú: " : "🤖 AstroChat: ";
-      let cleanText = msg.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
-      const lines = doc.splitTextToSize(prefix + cleanText, 160);
-      doc.text(lines, 20, y);
-      y += lines.length * 6;
+      const prefix = msg.role === 'user' ? '👤 Tú: ' : '🤖 AstroChat: ';
+      let text = prefix + msg.content.replace(/<[^>]*>/g, '');
+      const lines = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - margin * 2);
+      for (let line of lines) {
+        if (y + 6 > doc.internal.pageSize.getHeight() - margin) {
+          doc.addPage();
+          y = margin + 5;
+        }
+        doc.text(line, margin, y);
+        y += 6;
+      }
+      y += 2;
     }
-    doc.save("chat_astronomia.pdf");
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`AstroChat - ${new Date().toLocaleDateString()}`, margin, doc.internal.pageSize.getHeight() - 10);
+      doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - margin - 20, doc.internal.pageSize.getHeight() - 10);
+    }
+    doc.save('conversacion_astrochat.pdf');
   }
 
   function clearChat() {
@@ -420,7 +499,6 @@
   document.getElementById('clearHistoryBtn').onclick = () => clearChat();
   document.getElementById('emergencyBtn').onclick = () => window.location.href = 'https://www.google.com';
 
-  // Preguntas sugeridas (rápidas)
   const suggestionsDiv = document.getElementById('suggestions');
   const quickQuestions = [
     '¿Qué es un agujero negro?',
@@ -438,7 +516,6 @@
     suggestionsDiv.appendChild(btn);
   });
 
-  // Iniciar: limpiar completamente el chat (sin historial previo)
   clearChatCompletely();
 </script>
 </body>
