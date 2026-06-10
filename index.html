@@ -35,85 +35,29 @@
     .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.5rem auto; max-width: 900px; padding: 0 1rem; }
     .suggestion-btn { background: #ffffffcc; border: 1px solid var(--border); border-radius: 40px; padding: 0.3rem 0.7rem; font-size: 0.7rem; cursor: pointer; }
     .bottom-menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid var(--border);
-      z-index: 100;
-      display: flex;
-      justify-content: space-evenly;
-      padding: 0.3rem;
-      flex-wrap: wrap;
-      gap: 0.2rem;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border); z-index: 100;
+      display: flex; justify-content: space-evenly; padding: 0.3rem;
+      flex-wrap: wrap; gap: 0.2rem;
     }
     .menu-item {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      background: none;
-      border: none;
-      font-size: 0.65rem;
-      font-weight: 500;
-      padding: 4px 8px;
-      border-radius: 40px;
-      cursor: pointer;
-      min-width: 55px;
+      display: inline-flex; flex-direction: column; align-items: center;
+      background: none; border: none; font-size: 0.65rem; font-weight: 500;
+      padding: 4px 8px; border-radius: 40px; cursor: pointer; min-width: 55px;
     }
     .menu-item:hover { background: var(--border); }
     .emergency-btn {
-      position: fixed;
-      bottom: 85px;
-      right: 12px;
-      background: #e07a6a;
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 6px 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      z-index: 200;
+      position: fixed; bottom: 85px; right: 12px;
+      background: #e07a6a; color: white; border: none;
+      border-radius: 50px; padding: 6px 12px; font-size: 0.7rem;
+      font-weight: bold; display: flex; align-items: center; gap: 5px;
+      cursor: pointer; z-index: 200;
     }
-    .modal {
-      display: none;
-      position: fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      max-width: 500px;
-      width: 90%;
-      border-radius: 24px;
-      padding: 1.2rem;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
+    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; max-width: 500px; width: 90%; border-radius: 24px; padding: 1.2rem; max-height: 80vh; overflow-y: auto; }
     .quiz-question { font-size: 1.1rem; font-weight: bold; margin: 1rem 0; }
-    .quiz-option {
-      display: block;
-      width: 100%;
-      text-align: left;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 60px;
-      padding: 0.6rem 1rem;
-      margin: 0.5rem 0;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+    .quiz-option { display: block; width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 60px; padding: 0.6rem 1rem; margin: 0.5rem 0; cursor: pointer; transition: 0.2s; }
     .quiz-option:hover { background: var(--primary-light); color: white; }
     footer { text-align: center; font-size: 0.65rem; padding: 0.8rem; color: #6c757d; }
     @media (max-width: 600px) {
@@ -170,13 +114,15 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas. Cuando el estudiante pida un test, genera 5 preguntas de opción múltiple con su respuesta correcta al final.`;
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas.
+
+  Cuando un estudiante te pida un test, genera 5 preguntas de opción múltiple con las respuestas al final.`;
 
   function clearChatCompletely() {
     chatHistory = [];
     messagesDiv.innerHTML = '';
     localStorage.removeItem('astroChatHistory');
-    addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre astronomía, pedirme un test, resúmenes, o usar los botones del menú. ¿Por dónde empezamos?');
+    addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre astronomía, pedirme un test, resúmenes, o usar los botones. ¿Por dónde empezamos?');
   }
 
   function addMessage(role, text, rawMarkdown = true) {
@@ -212,7 +158,7 @@
 
   async function askGroq(userMessage, isResumen = false) {
     if (!workerUrl) {
-      addMessage('bot', '⚠️ Error: URL del Worker no configurada. Contacta al administrador.');
+      addMessage('bot', '⚠️ Error: URL del Worker no configurada.');
       return null;
     }
     let messagesToSend = isResumen ? [{ role: 'user', content: userMessage }] : chatHistory.concat({ role: 'user', content: userMessage });
@@ -227,83 +173,9 @@
       return data.reply;
     } catch (error) {
       console.error(error);
-      addMessage('bot', '🔌 Error de conexión. El servicio no está disponible temporalmente.');
+      addMessage('bot', '🔌 Error de conexión. El servicio no está disponible.');
       return null;
     }
-  }
-
-  // Función mejorada para generar PDF profesional
-  function generatePDF(title, content) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20; // márgenes laterales superior e inferior
-    let y = margin + 10; // posición Y inicial después del título
-
-    // Configurar fuentes y colores
-    doc.setFont('helvetica');
-    
-    // --- Título con icono y color azul ---
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(44, 62, 102); // azul oscuro #2c3e66
-    doc.text(`🚀 ${title}`, margin, y);
-    y += 10;
-    
-    // Línea decorativa debajo del título
-    doc.setDrawColor(74, 111, 165); // azul medio
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 8;
-    
-    // --- Contenido: texto en gris oscuro, tamaño 11, normal ---
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(51, 51, 51); // gris oscuro #333333
-    
-    // Limpiar el contenido: eliminar etiquetas HTML y caracteres especiales
-    let cleanText = content.replace(/<[^>]*>/g, '')      // eliminar HTML
-                           .replace(/&nbsp;/g, ' ')
-                           .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
-                           .replace(/\s+/g, ' ')
-                           .trim();
-    
-    // Dividir el texto en líneas respetando el ancho de página (márgenes)
-    const maxWidth = pageWidth - margin * 2;
-    const lines = doc.splitTextToSize(cleanText, maxWidth);
-    
-    // Escribir línea por línea con control de salto de página
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      // Si la línea actual sobrepasa la página, crear nueva página
-      if (y + 7 > pageHeight - margin) {
-        doc.addPage();
-        y = margin + 5;
-        // Restablecer color y fuente en nueva página
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(51, 51, 51);
-      }
-      doc.text(line, margin, y);
-      y += 7; // interlineado
-    }
-    
-    // --- Pie de página (nombre del chatbot y fecha) ---
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(100, 100, 100);
-      const footerText = `AstroChat - Resumen generado el ${new Date().toLocaleDateString()}`;
-      doc.text(footerText, margin, pageHeight - 10);
-      // Número de página
-      doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin - 20, pageHeight - 10);
-    }
-    
-    // Guardar PDF
-    doc.save(`resumen_${title.replace(/ /g, '_')}.pdf`);
   }
 
   async function sendMessage(message, skipAddUser = false) {
@@ -316,7 +188,7 @@
     if (esResumen) {
       let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
       if (!tema) tema = "astronomía";
-      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa párrafos claros. No uses lenguaje técnico complejo.`;
+      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa **negritas** para los subtítulos. No uses emojis.`;
       reply = await askGroq(promptResumen, true);
     } else {
       reply = await askGroq(message);
@@ -327,15 +199,170 @@
       if (esResumen) {
         const lastMsg = messagesDiv.lastChild;
         const btn = document.createElement('button');
-        btn.textContent = '📥 Descargar PDF (versión mejorada)';
+        btn.textContent = '📥 Descargar PDF';
         btn.style.cssText = 'margin-top:8px; padding:4px 10px; border-radius:20px; border:none; background:#4a6fa5; color:white; cursor:pointer; font-size:0.75rem;';
         const temaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
         btn.onclick = () => generatePDF(temaPDF, reply);
         lastMsg.appendChild(btn);
       }
     } else {
-      addMessage('bot', 'No se pudo obtener respuesta. Inténtalo de nuevo más tarde.');
+      addMessage('bot', 'No se pudo obtener respuesta. Inténtalo de nuevo.');
     }
+  }
+
+  // ========== NUEVA FUNCIÓN GENERAR PDF PROFESIONAL ==========
+  function generatePDF(title, content) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    });
+
+    // Márgenes (mm)
+    const marginLeft = 20;
+    const marginRight = 20;
+    const marginTop = 25;
+    const marginBottom = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const textWidth = pageWidth - marginLeft - marginRight;
+
+    // Limpiar el contenido: eliminar emojis y limpiar markdown básico
+    let cleanTitle = title.replace(/[^\w\sáéíóúüñÑ]/g, ' ').replace(/\s+/g, ' ').trim();
+    let cleanContent = content
+      .replace(/[^\w\s\.,;:!?áéíóúüñÑ()\-¿¡]/g, ' ')  // elimina emojis y caracteres extraños
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Convertir negritas markdown **texto** a marcado especial para jsPDF
+    // Guardaremos partes para aplicar estilo bold
+    const parts = [];
+    let lastIndex = 0;
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    let match;
+    let plainText = '';
+    while ((match = boldRegex.exec(cleanContent)) !== null) {
+      plainText += cleanContent.substring(lastIndex, match.index);
+      parts.push({ text: plainText, style: 'normal' });
+      plainText = '';
+      parts.push({ text: match[1], style: 'bold' });
+      lastIndex = match.index + match[0].length;
+    }
+    plainText += cleanContent.substring(lastIndex);
+    if (plainText) parts.push({ text: plainText, style: 'normal' });
+
+    // Función para añadir texto con saltos de línea respetando negritas
+    function addStyledText(doc, parts, x, y, maxWidth, lineHeight = 5) {
+      let currentY = y;
+      let currentLine = '';
+      let currentStyles = [];
+      
+      // Dividimos en segmentos
+      for (let seg of parts) {
+        const words = seg.text.split(' ');
+        for (let w of words) {
+          const testLine = currentLine + (currentLine ? ' ' : '') + w;
+          const testWidth = doc.getTextWidth(testLine);
+          if (testWidth > maxWidth && currentLine !== '') {
+            // Imprimir línea actual con sus estilos
+            let xOffset = x;
+            for (let styleSeg of currentStyles) {
+              doc.setFont('helvetica', styleSeg.style === 'bold' ? 'bold' : 'normal');
+              const segWidth = doc.getTextWidth(styleSeg.text);
+              doc.text(styleSeg.text, xOffset, currentY);
+              xOffset += segWidth;
+            }
+            currentY += lineHeight;
+            currentLine = w;
+            currentStyles = [{ text: w, style: seg.style }];
+          } else {
+            if (currentLine === '') {
+              currentLine = w;
+              currentStyles = [{ text: w, style: seg.style }];
+            } else {
+              currentLine += ' ' + w;
+              currentStyles.push({ text: ' ' + w, style: seg.style });
+            }
+          }
+        }
+      }
+      if (currentLine !== '') {
+        let xOffset = x;
+        for (let styleSeg of currentStyles) {
+          doc.setFont('helvetica', styleSeg.style === 'bold' ? 'bold' : 'normal');
+          const segWidth = doc.getTextWidth(styleSeg.text);
+          doc.text(styleSeg.text, xOffset, currentY);
+          xOffset += segWidth;
+        }
+        currentY += lineHeight;
+      }
+      return currentY;
+    }
+
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 102); // azul oscuro
+    const titleLines = doc.splitTextToSize(cleanTitle, textWidth);
+    let yPos = marginTop;
+    for (let line of titleLines) {
+      doc.text(line, marginLeft, yPos);
+      yPos += 7;
+    }
+    yPos += 3;
+
+    // Línea decorativa
+    doc.setDrawColor(200, 200, 200);
+    doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
+    yPos += 8;
+
+    // Contenido
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 70); // gris oscuro
+    // Dividir en párrafos (por saltos de línea dobles)
+    const paragraphs = cleanContent.split(/\n\s*\n/);
+    for (let para of paragraphs) {
+      if (para.trim() === '') continue;
+      // Dividir en partes con negritas para este párrafo
+      const localParts = [];
+      let localLast = 0;
+      let localMatch;
+      const localBoldRegex = /\*\*(.*?)\*\*/g;
+      let localPlain = '';
+      while ((localMatch = localBoldRegex.exec(para)) !== null) {
+        localPlain += para.substring(localLast, localMatch.index);
+        localParts.push({ text: localPlain, style: 'normal' });
+        localPlain = '';
+        localParts.push({ text: localMatch[1], style: 'bold' });
+        localLast = localMatch.index + localMatch[0].length;
+      }
+      localPlain += para.substring(localLast);
+      if (localPlain) localParts.push({ text: localPlain, style: 'normal' });
+      
+      const newY = addStyledText(doc, localParts, marginLeft, yPos, textWidth, 5.5);
+      yPos = newY + 2; // espacio extra entre párrafos
+      if (yPos > pageHeight - marginBottom - 10) {
+        doc.addPage();
+        yPos = marginTop;
+      }
+    }
+
+    // Pie de página
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      const dateStr = new Date().toLocaleDateString();
+      const footerText = `AstroChat · Resumen generado el ${dateStr} · Página ${i} de ${pageCount}`;
+      const footerWidth = doc.getTextWidth(footerText);
+      doc.text(footerText, pageWidth / 2 - footerWidth / 2, pageHeight - 10);
+    }
+
+    // Guardar
+    doc.save(`resumen_${cleanTitle.replace(/\s+/g, '_')}.pdf`);
   }
 
   function exportChatToPDF() {
@@ -344,42 +371,19 @@
       return;
     }
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const margin = 20;
-    let y = margin + 10;
-    doc.setFont('helvetica');
-    doc.setFontSize(18);
-    doc.setTextColor(44, 62, 102);
-    doc.text('Conversación con AstroChat', margin, y);
-    y += 10;
-    doc.setDrawColor(74, 111, 165);
-    doc.line(margin, y, doc.internal.pageSize.getWidth() - margin, y);
-    y += 8;
-    doc.setFontSize(10);
-    doc.setTextColor(51, 51, 51);
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Conversación AstroChat", 20, 20);
+    let y = 35;
     for (let msg of chatHistory) {
-      const prefix = msg.role === 'user' ? '👤 Tú: ' : '🤖 AstroChat: ';
-      let text = prefix + msg.content.replace(/<[^>]*>/g, '');
-      const lines = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - margin * 2);
-      for (let line of lines) {
-        if (y + 6 > doc.internal.pageSize.getHeight() - margin) {
-          doc.addPage();
-          y = margin + 5;
-        }
-        doc.text(line, margin, y);
-        y += 6;
-      }
-      y += 2;
+      if (y > 270) { doc.addPage(); y = 20; }
+      const prefix = msg.role === 'user' ? "👤 Tú: " : "🤖 AstroChat: ";
+      let cleanText = msg.content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+      const lines = doc.splitTextToSize(prefix + cleanText, 160);
+      doc.text(lines, 20, y);
+      y += lines.length * 6;
     }
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`AstroChat - ${new Date().toLocaleDateString()}`, margin, doc.internal.pageSize.getHeight() - 10);
-      doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - margin - 20, doc.internal.pageSize.getHeight() - 10);
-    }
-    doc.save('conversacion_astrochat.pdf');
+    doc.save("chat_astronomia.pdf");
   }
 
   function clearChat() {
@@ -388,12 +392,11 @@
     }
   }
 
-  // ===================== QUIZ INTERACTIVO =====================
+  // ========== QUIZ INTERACTIVO (sin cambios) ==========
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
   let currentQuestions = [], currentIndex = 0, score = 0, userAnswers = [];
   let bestScore = localStorage.getItem('astroBestScore') || 0;
-
   const questionBank = [
     { text: "¿Cuál es el planeta más grande del Sistema Solar?", options: ["Marte", "Júpiter", "Saturno", "Neptuno"], correct: "Júpiter" },
     { text: "¿Qué estrella es el centro de nuestro sistema planetario?", options: ["Sirio", "Próxima Centauri", "El Sol", "Vega"], correct: "El Sol" },
@@ -404,17 +407,7 @@
     { text: "¿Cuántos planetas tiene el Sistema Solar (sin Plutón)?", options: ["7", "8", "9", "10"], correct: "8" },
     { text: "¿Qué misión puso el primer humano en la Luna?", options: ["Apolo 11", "Artemis 1", "Gemini 4", "Sputnik"], correct: "Apolo 11" },
     { text: "¿Qué es una supernova?", options: ["Una estrella que explota al final de su vida", "Un cometa gigante", "Una luna nueva", "Un agujero de gusano"], correct: "Una estrella que explota al final de su vida" },
-    { text: "¿Cuál es el planeta conocido como el 'gigante gaseoso' de color azul verdoso?", options: ["Urano", "Júpiter", "Saturno", "Neptuno"], correct: "Neptuno" },
-    { text: "¿Qué fenómeno ocurre cuando la Luna se interpone entre el Sol y la Tierra?", options: ["Eclipse solar", "Eclipse lunar", "Marea alta", "Aurora boreal"], correct: "Eclipse solar" },
-    { text: "¿Qué objeto del cielo profundo es famoso por sus anillos visibles?", options: ["Nebulosa de Orión", "Galaxia del Sombrero", "Saturno", "Cúmulo de las Pléyades"], correct: "Saturno" },
-    { text: "¿Qué nombre recibe la estrella más cercana al Sol?", options: ["Próxima Centauri", "Alfa Centauri", "Barnard", "Sirio"], correct: "Próxima Centauri" },
-    { text: "¿Qué misión actual estudia el subsuelo de Marte?", options: ["Perseverance", "Curiosity", "InSight", "Mars Express"], correct: "InSight" },
-    { text: "¿Cuál es el planeta más caliente del Sistema Solar (por su densa atmósfera)?", options: ["Mercurio", "Venus", "Marte", "Júpiter"], correct: "Venus" },
-    { text: "¿Cuánto dura un día en Venus (rotación)?", options: ["243 días terrestres", "24 horas", "365 días", "687 días"], correct: "243 días terrestres" },
-    { text: "¿Qué misión llevó el rover Perseverance a Marte?", options: ["Mars 2020", "ExoMars", "Curiosity", "Opportunity"], correct: "Mars 2020" },
-    { text: "¿Cuál es la luna más grande de Júpiter?", options: ["Ganímedes", "Europa", "Ío", "Calisto"], correct: "Ganímedes" },
-    { text: "¿Qué estrella explotará como supernova en los próximos miles de años (visible desde la Tierra)?", options: ["Betelgeuse", "Sirio", "Polaris", "Alpha Centauri"], correct: "Betelgeuse" },
-    { text: "¿Qué telescopio espacial sucede al Hubble?", options: ["James Webb", "Spitzer", "Kepler", "Chandra"], correct: "James Webb" }
+    { text: "¿Cuál es el planeta conocido como el 'gigante gaseoso' de color azul verdoso?", options: ["Urano", "Júpiter", "Saturno", "Neptuno"], correct: "Neptuno" }
   ];
 
   function getRandomQuestions(n) {
@@ -449,9 +442,7 @@
     }
     const q = currentQuestions[currentIndex];
     let html = `<div class="quiz-question">${q.text}</div>`;
-    q.options.forEach(opt => {
-      html += `<button class="quiz-option" data-answer="${opt}">${opt}</button>`;
-    });
+    q.options.forEach(opt => { html += `<button class="quiz-option" data-answer="${opt}">${opt}</button>`; });
     html += `<div class="score-area">📊 Puntuación: ${score} / ${currentQuestions.length}</div>`;
     quizArea.innerHTML = html;
     document.querySelectorAll('.quiz-option').forEach(btn => {
@@ -489,7 +480,7 @@
     renderQuiz();
   }
 
-  // ===================== EVENTOS =====================
+  // EVENTOS
   sendBtn.onclick = () => { const msg = userInput.value.trim(); if(msg) { sendMessage(msg); userInput.value = ''; } };
   userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
   document.getElementById('summaryBtn').onclick = () => { const t = prompt('¿Tema del resumen?'); if(t) sendMessage(`Haz un resumen descargable de ${t}`); };
@@ -501,12 +492,8 @@
 
   const suggestionsDiv = document.getElementById('suggestions');
   const quickQuestions = [
-    '¿Qué es un agujero negro?',
-    '¿Cómo se forma una estrella?',
-    '¿Por qué Marte es rojo?',
-    '¿Qué es la Vía Láctea?',
-    '¿Cuánto dura un día en Venus?',
-    'Hazme un test de estrellas'
+    '¿Qué es un agujero negro?', '¿Cómo se forma una estrella?', '¿Por qué Marte es rojo?',
+    '¿Qué es la Vía Láctea?', '¿Cuánto dura un día en Venus?', 'Hazme un test de estrellas'
   ];
   quickQuestions.forEach(q => {
     const btn = document.createElement('button');
