@@ -114,9 +114,7 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas.
-
-  Cuando un estudiante te pida un test, genera 5 preguntas de opción múltiple con las respuestas al final.`;
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa **negritas** para destacar conceptos importantes y títulos. Cuando el usuario pida un resumen descargable, genera un texto con títulos en negrita (**Introducción**, **Puntos clave**, **Conclusión**) y párrafos bien separados. Usa emojis solo si aportan claridad, pero evítalos en títulos.`;
 
   function clearChatCompletely() {
     chatHistory = [];
@@ -188,7 +186,7 @@
     if (esResumen) {
       let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
       if (!tema) tema = "astronomía";
-      const promptResumen = `Genera un resumen extenso sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Incluye título, introducción, puntos clave y conclusión. Usa **negritas** para los subtítulos. No uses emojis.`;
+      const promptResumen = `Genera un resumen extenso y bien estructurado sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Usa **negritas** para los subtítulos (por ejemplo: **Introducción**, **Desarrollo**, **Conclusión**). Separa los párrafos con líneas en blanco. No uses emojis. El resumen debe tener un título principal en negrita al inicio. Formato claro y legible.`;
       reply = await askGroq(promptResumen, true);
     } else {
       reply = await askGroq(message);
@@ -210,7 +208,7 @@
     }
   }
 
-  // ========== NUEVA FUNCIÓN GENERAR PDF PROFESIONAL ==========
+  // ========== FUNCIÓN GENERAR PDF PROFESIONAL (respetando formato markdown) ==========
   function generatePDF(title, content) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -219,133 +217,129 @@
       orientation: 'portrait'
     });
 
-    // Márgenes (mm)
-    const marginLeft = 20;
-    const marginRight = 20;
-    const marginTop = 25;
-    const marginBottom = 20;
+    // Configuración de márgenes (mm)
+    const marginX = 20;
+    const marginYTop = 25;
+    const marginYBottom = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const textWidth = pageWidth - marginLeft - marginRight;
+    const maxTextWidth = pageWidth - 2 * marginX;
+    let y = marginYTop;
 
-    // Limpiar el contenido: eliminar emojis y limpiar markdown básico
-    let cleanTitle = title.replace(/[^\w\sáéíóúüñÑ]/g, ' ').replace(/\s+/g, ' ').trim();
-    let cleanContent = content
-      .replace(/[^\w\s\.,;:!?áéíóúüñÑ()\-¿¡]/g, ' ')  // elimina emojis y caracteres extraños
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // Convertir negritas markdown **texto** a marcado especial para jsPDF
-    // Guardaremos partes para aplicar estilo bold
-    const parts = [];
-    let lastIndex = 0;
-    const boldRegex = /\*\*(.*?)\*\*/g;
-    let match;
-    let plainText = '';
-    while ((match = boldRegex.exec(cleanContent)) !== null) {
-      plainText += cleanContent.substring(lastIndex, match.index);
-      parts.push({ text: plainText, style: 'normal' });
-      plainText = '';
-      parts.push({ text: match[1], style: 'bold' });
-      lastIndex = match.index + match[0].length;
+    // Título del PDF (tema solicitado)
+    const pdfTitle = `Resumen: ${title.charAt(0).toUpperCase() + title.slice(1)}`;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 102); // azul oscuro
+    const titleLines = doc.splitTextToSize(pdfTitle, maxTextWidth);
+    for (let line of titleLines) {
+      doc.text(line, marginX, y);
+      y += 8;
     }
-    plainText += cleanContent.substring(lastIndex);
-    if (plainText) parts.push({ text: plainText, style: 'normal' });
+    y += 2;
+    // Línea decorativa
+    doc.setDrawColor(200, 200, 200);
+    doc.line(marginX, y, pageWidth - marginX, y);
+    y += 8;
 
-    // Función para añadir texto con saltos de línea respetando negritas
-    function addStyledText(doc, parts, x, y, maxWidth, lineHeight = 5) {
-      let currentY = y;
-      let currentLine = '';
-      let currentStyles = [];
+    // Función para procesar una línea de texto con negritas
+    function addStyledLine(text, yPos, fontSize = 11, isBold = false) {
+      const parts = [];
+      let lastIndex = 0;
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      let match;
+      let plainPart = '';
+      while ((match = boldRegex.exec(text)) !== null) {
+        plainPart = text.substring(lastIndex, match.index);
+        if (plainPart) parts.push({ text: plainPart, bold: false });
+        parts.push({ text: match[1], bold: true });
+        lastIndex = match.index + match[0].length;
+      }
+      const remaining = text.substring(lastIndex);
+      if (remaining) parts.push({ text: remaining, bold: false });
       
-      // Dividimos en segmentos
-      for (let seg of parts) {
-        const words = seg.text.split(' ');
-        for (let w of words) {
-          const testLine = currentLine + (currentLine ? ' ' : '') + w;
+      let currentX = marginX;
+      doc.setFontSize(fontSize);
+      for (let part of parts) {
+        doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
+        const textWidth = doc.getTextWidth(part.text);
+        doc.text(part.text, currentX, yPos);
+        currentX += textWidth;
+      }
+      return yPos + 5; // interlineado básico
+    }
+
+    // Función para dividir texto largo en líneas ajustadas al ancho, respetando negritas
+    function addParagraph(text, yPos) {
+      const lines = text.split(/\r?\n/);
+      let currentY = yPos;
+      for (let line of lines) {
+        if (line.trim() === '') {
+          currentY += 4; // espacio extra entre párrafos
+          continue;
+        }
+        // Detectar si es un título (línea que empieza con ** y termina con **)
+        const isTitle = line.startsWith('**') && line.endsWith('**');
+        let cleanLine = line;
+        if (isTitle) {
+          cleanLine = line.slice(2, -2);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(13);
+          doc.setTextColor(44, 62, 102);
+          const wrapped = doc.splitTextToSize(cleanLine, maxTextWidth);
+          for (let w of wrapped) {
+            doc.text(w, marginX, currentY);
+            currentY += 6;
+          }
+          currentY += 2;
+          continue;
+        }
+        // Línea normal: puede tener negritas
+        doc.setFontSize(11);
+        doc.setTextColor(60, 60, 70);
+        // Dividir línea en segmentos según el ancho
+        const words = cleanLine.split(' ');
+        let currentLine = '';
+        let currentBoldSegments = [];
+        let xOffset = marginX;
+        let lineStartY = currentY;
+        
+        // Método más simple: escribir palabra por palabra con wrap
+        let tempLine = '';
+        for (let word of words) {
+          const testLine = tempLine ? tempLine + ' ' + word : word;
           const testWidth = doc.getTextWidth(testLine);
-          if (testWidth > maxWidth && currentLine !== '') {
-            // Imprimir línea actual con sus estilos
-            let xOffset = x;
-            for (let styleSeg of currentStyles) {
-              doc.setFont('helvetica', styleSeg.style === 'bold' ? 'bold' : 'normal');
-              const segWidth = doc.getTextWidth(styleSeg.text);
-              doc.text(styleSeg.text, xOffset, currentY);
-              xOffset += segWidth;
-            }
-            currentY += lineHeight;
-            currentLine = w;
-            currentStyles = [{ text: w, style: seg.style }];
+          if (testWidth > maxTextWidth && tempLine !== '') {
+            // Escribir tempLine actual
+            doc.text(tempLine, marginX, currentY);
+            currentY += 5.5;
+            tempLine = word;
           } else {
-            if (currentLine === '') {
-              currentLine = w;
-              currentStyles = [{ text: w, style: seg.style }];
-            } else {
-              currentLine += ' ' + w;
-              currentStyles.push({ text: ' ' + w, style: seg.style });
-            }
+            tempLine = testLine;
           }
         }
-      }
-      if (currentLine !== '') {
-        let xOffset = x;
-        for (let styleSeg of currentStyles) {
-          doc.setFont('helvetica', styleSeg.style === 'bold' ? 'bold' : 'normal');
-          const segWidth = doc.getTextWidth(styleSeg.text);
-          doc.text(styleSeg.text, xOffset, currentY);
-          xOffset += segWidth;
+        if (tempLine) {
+          doc.text(tempLine, marginX, currentY);
+          currentY += 5.5;
         }
-        currentY += lineHeight;
+        // Pequeño ajuste entre líneas
+        currentY += 1;
       }
       return currentY;
     }
 
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(44, 62, 102); // azul oscuro
-    const titleLines = doc.splitTextToSize(cleanTitle, textWidth);
-    let yPos = marginTop;
-    for (let line of titleLines) {
-      doc.text(line, marginLeft, yPos);
-      yPos += 7;
-    }
-    yPos += 3;
-
-    // Línea decorativa
-    doc.setDrawColor(200, 200, 200);
-    doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
-    yPos += 8;
-
-    // Contenido
-    doc.setFontSize(11);
-    doc.setTextColor(60, 60, 70); // gris oscuro
-    // Dividir en párrafos (por saltos de línea dobles)
-    const paragraphs = cleanContent.split(/\n\s*\n/);
+    // Dividir el contenido en párrafos por doble salto de línea
+    const paragraphs = content.split(/\n\s*\n/);
     for (let para of paragraphs) {
       if (para.trim() === '') continue;
-      // Dividir en partes con negritas para este párrafo
-      const localParts = [];
-      let localLast = 0;
-      let localMatch;
-      const localBoldRegex = /\*\*(.*?)\*\*/g;
-      let localPlain = '';
-      while ((localMatch = localBoldRegex.exec(para)) !== null) {
-        localPlain += para.substring(localLast, localMatch.index);
-        localParts.push({ text: localPlain, style: 'normal' });
-        localPlain = '';
-        localParts.push({ text: localMatch[1], style: 'bold' });
-        localLast = localMatch.index + localMatch[0].length;
-      }
-      localPlain += para.substring(localLast);
-      if (localPlain) localParts.push({ text: localPlain, style: 'normal' });
-      
-      const newY = addStyledText(doc, localParts, marginLeft, yPos, textWidth, 5.5);
-      yPos = newY + 2; // espacio extra entre párrafos
-      if (yPos > pageHeight - marginBottom - 10) {
+      // Limpiar la línea de emojis y caracteres raros (opcional)
+      let cleanPara = para.replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ''); // elimina emojis
+      y = addParagraph(cleanPara, y);
+      if (y > pageHeight - marginYBottom - 20) {
         doc.addPage();
-        yPos = marginTop;
+        y = marginYTop;
       }
+      y += 2; // espacio extra entre párrafos
     }
 
     // Pie de página
@@ -361,8 +355,9 @@
       doc.text(footerText, pageWidth / 2 - footerWidth / 2, pageHeight - 10);
     }
 
-    // Guardar
-    doc.save(`resumen_${cleanTitle.replace(/\s+/g, '_')}.pdf`);
+    // Guardar PDF
+    const safeTitle = title.replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
+    doc.save(`resumen_${safeTitle}.pdf`);
   }
 
   function exportChatToPDF() {
@@ -392,7 +387,7 @@
     }
   }
 
-  // ========== QUIZ INTERACTIVO (sin cambios) ==========
+  // ========== QUIZ INTERACTIVO ==========
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
   let currentQuestions = [], currentIndex = 0, score = 0, userAnswers = [];
