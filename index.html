@@ -114,7 +114,7 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa **negritas** para destacar conceptos importantes y títulos. Cuando el usuario pida un resumen descargable, genera un texto con títulos en negrita (**Introducción**, **Puntos clave**, **Conclusión**) y párrafos bien separados. Usa emojis solo si aportan claridad, pero evítalos en títulos.`;
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa **negritas** para destacar conceptos importantes y títulos. Cuando el usuario pida un resumen descargable, genera un texto con títulos en negrita (**Introducción**, **Puntos clave**, **Conclusión**) y párrafos bien separados. No uses emojis en los títulos.`;
 
   function clearChatCompletely() {
     chatHistory = [];
@@ -208,8 +208,8 @@
     }
   }
 
-  // ========== FUNCIÓN GENERAR PDF PROFESIONAL (respetando formato markdown) ==========
-  function generatePDF(title, content) {
+  // ========== FUNCIÓN GENERAR PDF CON TÍTULO MEJORADO ==========
+  function generatePDF(tema, contenido) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
       unit: 'mm',
@@ -217,147 +217,85 @@
       orientation: 'portrait'
     });
 
-    // Configuración de márgenes (mm)
-    const marginX = 20;
-    const marginYTop = 25;
-    const marginYBottom = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const maxTextWidth = pageWidth - 2 * marginX;
-    let y = marginYTop;
+    // Márgenes
+    const margenX = 20;
+    const margenYSuperior = 25;
+    const margenYInferior = 20;
+    const anchoPagina = doc.internal.pageSize.getWidth();
+    const altoPagina = doc.internal.pageSize.getHeight();
+    const anchoTexto = anchoPagina - 2 * margenX;
+    let y = margenYSuperior;
 
-    // Título del PDF (tema solicitado)
-    const pdfTitle = `Resumen: ${title.charAt(0).toUpperCase() + title.slice(1)}`;
+    // Formatear el tema: primera letra mayúscula, resto minúsculas
+    let temaFormateado = tema.trim();
+    if (temaFormateado.length > 0) {
+      temaFormateado = temaFormateado.charAt(0).toUpperCase() + temaFormateado.slice(1).toLowerCase();
+    }
+    const titulo = `Resumen sobre: ${temaFormateado}`;
+    
+    // Título en azul
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(44, 62, 102); // azul oscuro
-    const titleLines = doc.splitTextToSize(pdfTitle, maxTextWidth);
-    for (let line of titleLines) {
-      doc.text(line, marginX, y);
+    const lineasTitulo = doc.splitTextToSize(titulo, anchoTexto);
+    for (let linea of lineasTitulo) {
+      doc.text(linea, margenX, y);
       y += 8;
     }
     y += 2;
-    // Línea decorativa
     doc.setDrawColor(200, 200, 200);
-    doc.line(marginX, y, pageWidth - marginX, y);
+    doc.line(margenX, y, anchoPagina - margenX, y);
     y += 8;
 
-    // Función para procesar una línea de texto con negritas
-    function addStyledLine(text, yPos, fontSize = 11, isBold = false) {
-      const parts = [];
-      let lastIndex = 0;
-      const boldRegex = /\*\*(.*?)\*\*/g;
-      let match;
-      let plainPart = '';
-      while ((match = boldRegex.exec(text)) !== null) {
-        plainPart = text.substring(lastIndex, match.index);
-        if (plainPart) parts.push({ text: plainPart, bold: false });
-        parts.push({ text: match[1], bold: true });
-        lastIndex = match.index + match[0].length;
-      }
-      const remaining = text.substring(lastIndex);
-      if (remaining) parts.push({ text: remaining, bold: false });
-      
-      let currentX = marginX;
-      doc.setFontSize(fontSize);
-      for (let part of parts) {
-        doc.setFont('helvetica', part.bold ? 'bold' : 'normal');
-        const textWidth = doc.getTextWidth(part.text);
-        doc.text(part.text, currentX, yPos);
-        currentX += textWidth;
-      }
-      return yPos + 5; // interlineado básico
-    }
+    // Limpiar el contenido: eliminar emojis y caracteres extraños, y también eliminar los saltos de línea dobles que quedan
+    let textoLimpio = contenido
+      .replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') // elimina emojis
+      .replace(/\*\*/g, '')  // quita las dobles estrellas (negritas markdown)
+      .replace(/\*/g, '')    // quita las simples
+      .replace(/[^\x20-\x7E\u00C0-\u00FF\u0100-\u017F]/g, ' ') // elimina caracteres no imprimibles (como los que aparecían al inicio)
+      .replace(/\s+/g, ' ')  // espacios múltiples a uno solo
+      .trim();
 
-    // Función para dividir texto largo en líneas ajustadas al ancho, respetando negritas
-    function addParagraph(text, yPos) {
-      const lines = text.split(/\r?\n/);
-      let currentY = yPos;
-      for (let line of lines) {
-        if (line.trim() === '') {
-          currentY += 4; // espacio extra entre párrafos
-          continue;
-        }
-        // Detectar si es un título (línea que empieza con ** y termina con **)
-        const isTitle = line.startsWith('**') && line.endsWith('**');
-        let cleanLine = line;
-        if (isTitle) {
-          cleanLine = line.slice(2, -2);
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(13);
-          doc.setTextColor(44, 62, 102);
-          const wrapped = doc.splitTextToSize(cleanLine, maxTextWidth);
-          for (let w of wrapped) {
-            doc.text(w, marginX, currentY);
-            currentY += 6;
-          }
-          currentY += 2;
-          continue;
-        }
-        // Línea normal: puede tener negritas
-        doc.setFontSize(11);
-        doc.setTextColor(60, 60, 70);
-        // Dividir línea en segmentos según el ancho
-        const words = cleanLine.split(' ');
-        let currentLine = '';
-        let currentBoldSegments = [];
-        let xOffset = marginX;
-        let lineStartY = currentY;
-        
-        // Método más simple: escribir palabra por palabra con wrap
-        let tempLine = '';
-        for (let word of words) {
-          const testLine = tempLine ? tempLine + ' ' + word : word;
-          const testWidth = doc.getTextWidth(testLine);
-          if (testWidth > maxTextWidth && tempLine !== '') {
-            // Escribir tempLine actual
-            doc.text(tempLine, marginX, currentY);
-            currentY += 5.5;
-            tempLine = word;
-          } else {
-            tempLine = testLine;
-          }
-        }
-        if (tempLine) {
-          doc.text(tempLine, marginX, currentY);
-          currentY += 5.5;
-        }
-        // Pequeño ajuste entre líneas
-        currentY += 1;
-      }
-      return currentY;
-    }
+    // Dividir en párrafos (por doble salto de línea original, pero ahora solo por puntos y aparte aproximados)
+    // Para mantener la estructura, separamos por saltos de línea seguidos de espacios o al inicio de línea con negritas.
+    // Como ya limpiamos, podemos dividir por dos o más saltos de línea.
+    let parrafos = textoLimpio.split(/\n\s*\n/);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 70); // gris oscuro
 
-    // Dividir el contenido en párrafos por doble salto de línea
-    const paragraphs = content.split(/\n\s*\n/);
-    for (let para of paragraphs) {
-      if (para.trim() === '') continue;
-      // Limpiar la línea de emojis y caracteres raros (opcional)
-      let cleanPara = para.replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ''); // elimina emojis
-      y = addParagraph(cleanPara, y);
-      if (y > pageHeight - marginYBottom - 20) {
-        doc.addPage();
-        y = marginYTop;
+    for (let parrafo of parrafos) {
+      if (parrafo.trim() === '') continue;
+      // Separar líneas largas
+      const lineas = doc.splitTextToSize(parrafo, anchoTexto);
+      for (let linea of lineas) {
+        if (y + 6 > altoPagina - margenYInferior) {
+          doc.addPage();
+          y = margenYSuperior;
+        }
+        doc.text(linea, margenX, y);
+        y += 5.5; // interlineado
       }
-      y += 2; // espacio extra entre párrafos
+      y += 3; // espacio entre párrafos
     }
 
     // Pie de página
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
+    const numPaginas = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= numPaginas; i++) {
       doc.setPage(i);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(128, 128, 128);
-      const dateStr = new Date().toLocaleDateString();
-      const footerText = `AstroChat · Resumen generado el ${dateStr} · Página ${i} de ${pageCount}`;
-      const footerWidth = doc.getTextWidth(footerText);
-      doc.text(footerText, pageWidth / 2 - footerWidth / 2, pageHeight - 10);
+      const fecha = new Date().toLocaleDateString();
+      const textoPie = `AstroChat · Resumen generado el ${fecha} · Página ${i} de ${numPaginas}`;
+      const anchoPie = doc.getTextWidth(textoPie);
+      doc.text(textoPie, (anchoPagina - anchoPie) / 2, altoPagina - 10);
     }
 
-    // Guardar PDF
-    const safeTitle = title.replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
-    doc.save(`resumen_${safeTitle}.pdf`);
+    // Guardar archivo
+    const nombreSeguro = temaFormateado.replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
+    doc.save(`resumen_${nombreSeguro}.pdf`);
   }
 
   function exportChatToPDF() {
