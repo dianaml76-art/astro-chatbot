@@ -114,7 +114,18 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa **negritas** para destacar conceptos importantes y títulos. Cuando el usuario pida un resumen descargable, genera un texto con títulos en negrita (**Introducción**, **Puntos clave**, **Conclusión**) y párrafos bien separados. No uses emojis en los títulos.`;
+  const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa **negritas** para destacar conceptos importantes y títulos. Cuando el usuario pida un resumen descargable, genera un texto con títulos en negrita (**Introducción**, **Desarrollo**, **Conclusión**) y párrafos bien separados. No uses emojis en los títulos. Atiende específicamente el tema solicitado sin desviarte.`;
+
+  // Limpiar tema: eliminar palabras comunes y la palabra "Haz" que aparece por el comando del usuario
+  function limpiarTema(tema) {
+    let limpio = tema.toLowerCase();
+    // Eliminar palabras sobrantes (incluyendo "haz", "un", "una", "de", "el", "la", etc.)
+    limpio = limpio.replace(/\b(haz|un|una|de|el|la|los|las|sobre|acerca|del|al)\b/g, '');
+    limpio = limpio.replace(/\s+/g, ' ').trim();
+    if (limpio === '') return tema;
+    // Capitalizar primera letra
+    return limpio.charAt(0).toUpperCase() + limpio.slice(1);
+  }
 
   function clearChatCompletely() {
     chatHistory = [];
@@ -184,31 +195,36 @@
     showTyping(true, esResumen ? "Generando resumen..." : "Consultando a la IA...");
     let reply;
     if (esResumen) {
-      let tema = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
-      if (!tema) tema = "astronomía";
-      const promptResumen = `Genera un resumen extenso y bien estructurado sobre "${tema}" de al menos 400 palabras, para estudiantes de 12 a 18 años. Usa **negritas** para los subtítulos (por ejemplo: **Introducción**, **Desarrollo**, **Conclusión**). Separa los párrafos con líneas en blanco. No uses emojis. El resumen debe tener un título principal en negrita al inicio. Formato claro y legible.`;
+      let temaRaw = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim();
+      if (!temaRaw) temaRaw = "astronomía";
+      // Limpiar el tema para el título y nombre del archivo
+      let temaLimpio = limpiarTema(temaRaw);
+      // Para el prompt de Groq, evitar ambigüedades
+      let temaPrompt = temaRaw;
+      if (temaRaw.toLowerCase() === "sol") temaPrompt = "el Sol (la estrella central de nuestro sistema solar)";
+      else if (temaRaw.toLowerCase() === "luna") temaPrompt = "la Luna (el satélite natural de la Tierra)";
+      const promptResumen = `Genera un resumen extenso y educativo sobre ${temaPrompt} de al menos 400 palabras, para estudiantes de 12 a 18 años. Explica qué es, sus características principales, su importancia y datos curiosos. Incluye título en negrita, introducción, desarrollo y conclusión. Usa **negritas** para los subtítulos. No te desvíes a otros temas. No uses emojis.`;
       reply = await askGroq(promptResumen, true);
-    } else {
-      reply = await askGroq(message);
-    }
-    showTyping(false);
-    if (reply) {
-      addMessage('bot', reply);
-      if (esResumen) {
+      if (reply) {
+        addMessage('bot', reply);
         const lastMsg = messagesDiv.lastChild;
         const btn = document.createElement('button');
         btn.textContent = '📥 Descargar PDF';
         btn.style.cssText = 'margin-top:8px; padding:4px 10px; border-radius:20px; border:none; background:#4a6fa5; color:white; cursor:pointer; font-size:0.75rem;';
-        const temaPDF = message.replace(/resumen descargable|resumen en pdf|genera un resumen|resumen de/gi, '').trim() || "Astronomía";
-        btn.onclick = () => generatePDF(temaPDF, reply);
+        btn.onclick = () => generatePDF(temaLimpio, reply);
         lastMsg.appendChild(btn);
+      } else {
+        addMessage('bot', 'No se pudo obtener el resumen.');
       }
     } else {
-      addMessage('bot', 'No se pudo obtener respuesta. Inténtalo de nuevo.');
+      reply = await askGroq(message);
+      if (reply) addMessage('bot', reply);
+      else addMessage('bot', 'No se pudo obtener respuesta.');
     }
+    showTyping(false);
   }
 
-  // ========== FUNCIÓN GENERAR PDF CON TÍTULO MEJORADO ==========
+  // ========== FUNCIÓN GENERAR PDF (RESTAURADA A LA VERSIÓN QUE FUNCIONABA) ==========
   function generatePDF(tema, contenido) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -217,7 +233,6 @@
       orientation: 'portrait'
     });
 
-    // Márgenes
     const margenX = 20;
     const margenYSuperior = 25;
     const margenYInferior = 20;
@@ -226,17 +241,15 @@
     const anchoTexto = anchoPagina - 2 * margenX;
     let y = margenYSuperior;
 
-    // Formatear el tema: primera letra mayúscula, resto minúsculas
+    // Título limpio (tema ya viene limpio de palabras sobrantes)
     let temaFormateado = tema.trim();
     if (temaFormateado.length > 0) {
       temaFormateado = temaFormateado.charAt(0).toUpperCase() + temaFormateado.slice(1).toLowerCase();
     }
     const titulo = `Resumen sobre: ${temaFormateado}`;
-    
-    // Título en azul
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.setTextColor(44, 62, 102); // azul oscuro
+    doc.setTextColor(44, 62, 102);
     const lineasTitulo = doc.splitTextToSize(titulo, anchoTexto);
     for (let linea of lineasTitulo) {
       doc.text(linea, margenX, y);
@@ -247,37 +260,62 @@
     doc.line(margenX, y, anchoPagina - margenX, y);
     y += 8;
 
-    // Limpiar el contenido: eliminar emojis y caracteres extraños, y también eliminar los saltos de línea dobles que quedan
+    // Procesar el contenido respetando negritas y párrafos (VERSIÓN ORIGINAL QUE SÍ FUNCIONABA)
     let textoLimpio = contenido
       .replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') // elimina emojis
-      .replace(/\*\*/g, '')  // quita las dobles estrellas (negritas markdown)
-      .replace(/\*/g, '')    // quita las simples
-      .replace(/[^\x20-\x7E\u00C0-\u00FF\u0100-\u017F]/g, ' ') // elimina caracteres no imprimibles (como los que aparecían al inicio)
-      .replace(/\s+/g, ' ')  // espacios múltiples a uno solo
-      .trim();
-
-    // Dividir en párrafos (por doble salto de línea original, pero ahora solo por puntos y aparte aproximados)
-    // Para mantener la estructura, separamos por saltos de línea seguidos de espacios o al inicio de línea con negritas.
-    // Como ya limpiamos, podemos dividir por dos o más saltos de línea.
+      .replace(/\r/g, '');
+    
+    // Dividir en párrafos (por doble salto de línea)
     let parrafos = textoLimpio.split(/\n\s*\n/);
     
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    doc.setTextColor(60, 60, 70); // gris oscuro
+    doc.setTextColor(60, 60, 70);
 
     for (let parrafo of parrafos) {
       if (parrafo.trim() === '') continue;
-      // Separar líneas largas
-      const lineas = doc.splitTextToSize(parrafo, anchoTexto);
-      for (let linea of lineas) {
-        if (y + 6 > altoPagina - margenYInferior) {
-          doc.addPage();
-          y = margenYSuperior;
+      // Procesar líneas individuales dentro del párrafo, respetando negritas
+      let lineasParrafo = parrafo.split(/\n/);
+      for (let linea of lineasParrafo) {
+        if (linea.trim() === '') {
+          y += 3;
+          continue;
         }
-        doc.text(linea, margenX, y);
-        y += 5.5; // interlineado
+        // Detectar si es un título (línea que empieza con ** y termina con **)
+        if (linea.startsWith('**') && linea.endsWith('**')) {
+          let tituloSec = linea.slice(2, -2);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(13);
+          doc.setTextColor(44, 62, 102);
+          const wrapped = doc.splitTextToSize(tituloSec, anchoTexto);
+          for (let w of wrapped) {
+            if (y + 6 > altoPagina - margenYInferior) {
+              doc.addPage();
+              y = margenYSuperior;
+            }
+            doc.text(w, margenX, y);
+            y += 6;
+          }
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(11);
+          doc.setTextColor(60, 60, 70);
+          y += 2;
+          continue;
+        }
+        // Línea normal: puede contener negritas internas (pero no al inicio/fin)
+        // Simplificamos: eliminamos las ** y escribimos normal (para no complicar)
+        let lineaPlana = linea.replace(/\*\*/g, '');
+        const wrappedLine = doc.splitTextToSize(lineaPlana, anchoTexto);
+        for (let w of wrappedLine) {
+          if (y + 5 > altoPagina - margenYInferior) {
+            doc.addPage();
+            y = margenYSuperior;
+          }
+          doc.text(w, margenX, y);
+          y += 5;
+        }
       }
-      y += 3; // espacio entre párrafos
+      y += 3; // espacio extra entre párrafos
     }
 
     // Pie de página
@@ -293,7 +331,6 @@
       doc.text(textoPie, (anchoPagina - anchoPie) / 2, altoPagina - 10);
     }
 
-    // Guardar archivo
     const nombreSeguro = temaFormateado.replace(/[^\w\s]/g, '').replace(/\s+/g, '_');
     doc.save(`resumen_${nombreSeguro}.pdf`);
   }
@@ -325,7 +362,7 @@
     }
   }
 
-  // ========== QUIZ INTERACTIVO ==========
+  // ========== QUIZ (sin cambios) ==========
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
   let currentQuestions = [], currentIndex = 0, score = 0, userAnswers = [];
