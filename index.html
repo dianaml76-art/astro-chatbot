@@ -34,7 +34,7 @@
     .input-area button { background: var(--primary); border: none; width: 44px; border-radius: 60px; color: white; font-size: 1.2rem; cursor: pointer; }
     .suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin: 0.5rem auto; max-width: 900px; padding: 0 1rem; }
     .suggestion-btn { background: #ffffffcc; border: 1px solid var(--border); border-radius: 40px; padding: 0.3rem 0.7rem; font-size: 0.7rem; cursor: pointer; }
-    /* Menú inferior simplificado (sin botones redundantes) */
+    /* Menú inferior solo con los botones útiles */
     .bottom-menu {
       position: fixed;
       bottom: 0;
@@ -81,7 +81,6 @@
       cursor: pointer;
       z-index: 200;
     }
-    /* Modal del juego (quiz interactivo) */
     .modal {
       display: none;
       position: fixed;
@@ -141,7 +140,7 @@
   </div>
 </div>
 
-<!-- Menú inferior simplificado: solo botones útiles -->
+<!-- Menú inferior: solo los botones solicitados -->
 <div class="bottom-menu">
   <button class="menu-item" id="gameBtn">🎮<span>Juego</span></button>
   <button class="menu-item" id="summaryBtn">📄<span>Resumen</span></button>
@@ -151,7 +150,7 @@
 
 <button class="emergency-btn" id="emergencyBtn">🚨 Salir rápido</button>
 
-<!-- Modal del juego (quiz interactivo) -->
+<!-- Modal del quiz interactivo -->
 <div id="quizModal" class="modal">
   <div class="modal-content">
     <h2>🔭 Quiz Astronómico</h2>
@@ -164,7 +163,7 @@
 
 <script>
   // ============================================================
-  // URL del Worker de Cloudflare (ya configurada)
+  // URL del Worker (ya configurada, no tocar)
   // ============================================================
   const WORKER_URL = 'https://astro-groq-worker.dianaml76.workers.dev/';
   let workerUrl = WORKER_URL;
@@ -174,16 +173,17 @@
   const sendBtn = document.getElementById('sendBtn');
   let chatHistory = [];
 
-  // System prompt que obliga a generar tests en formato vertical con respuestas al final
+  // System prompt para generar tests en formato vertical con respuestas al final
   const SYSTEM_PROMPT_ASTRO = `Eres un tutor experto de astronomía para estudiantes de 12 a 18 años. Hablas español claro, divertido, con analogías sencillas. Respuestas cortas (máximo 3 párrafos) a menos que se pida resumen extenso. Usa emojis espaciales: 🌟🌍🪐🔭🚀. Puedes usar **negritas** y listas.
 
   Cuando un estudiante te pida un test, un quiz, un examen o preguntas (ejemplo: "hazme un test de estrellas", "quisiera un quiz", "evalúame sobre galaxias"), debes generar 5 preguntas de opción múltiple relacionadas con el tema solicitado. Cada pregunta debe aparecer en una línea separada con su número, y debajo de cada pregunta coloca las opciones en líneas diferentes, cada una precedida por una letra (a, b, c, d). No uses formato de lista horizontal. Al final del test, agrega un bloque separado con las respuestas correctas (ejemplo: "Respuestas correctas: 1a, 2c, 3b, 4d, 5a"). No incluyas las respuestas dentro de las preguntas. Asegúrate de que el formato sea claro y vertical.`;
 
-  // Limpiar historial al cargar la página (siempre empezar con mensaje de bienvenida)
-  function clearHistoryAndStart() {
+  // Función para limpiar completamente el chat (sin restos)
+  function clearChatCompletely() {
     chatHistory = [];
     messagesDiv.innerHTML = '';
     localStorage.removeItem('astroChatHistory');
+    // Mostrar solo el mensaje de bienvenida
     addMessage('bot', '🌌 ¡Hola, futura astronauta! Soy AstroChat, tu tutor espacial. Puedes preguntarme sobre astronomía, pedirme un test, resúmenes, o usar los botones del menú. ¿Por dónde empezamos?');
   }
 
@@ -193,7 +193,6 @@
     const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     let content = text;
     if (role === 'bot' && rawMarkdown) {
-      // Preservar saltos de línea para formato vertical
       content = text.replace(/\n/g, '<br>');
       content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
@@ -306,13 +305,11 @@
 
   function clearChat() {
     if (confirm("¿Borrar toda la conversación actual?")) {
-      chatHistory = [];
-      messagesDiv.innerHTML = '';
-      addMessage('bot', '🗑️ Conversación borrada. ¡Empieza de nuevo!');
+      clearChatCompletely();
     }
   }
 
-  // ===================== QUIZ INTERACTIVO (solo para el botón Juego) =====================
+  // ===================== QUIZ INTERACTIVO =====================
   const quizModal = document.getElementById('quizModal');
   const quizArea = document.getElementById('quizArea');
   let currentQuestions = [], currentIndex = 0, score = 0, userAnswers = [];
@@ -425,7 +422,15 @@
 
   // Preguntas sugeridas (rápidas)
   const suggestionsDiv = document.getElementById('suggestions');
-  ['¿Qué es un agujero negro?', '¿Cómo se forma una estrella?', '¿Por qué Marte es rojo?', '¿Qué es la Vía Láctea?', '¿Cuánto dura un día en Venus?', 'Hazme un test de estrellas'].forEach(q => {
+  const quickQuestions = [
+    '¿Qué es un agujero negro?',
+    '¿Cómo se forma una estrella?',
+    '¿Por qué Marte es rojo?',
+    '¿Qué es la Vía Láctea?',
+    '¿Cuánto dura un día en Venus?',
+    'Hazme un test de estrellas'
+  ];
+  quickQuestions.forEach(q => {
     const btn = document.createElement('button');
     btn.textContent = q;
     btn.className = 'suggestion-btn';
@@ -433,8 +438,8 @@
     suggestionsDiv.appendChild(btn);
   });
 
-  // Iniciar: limpiar todo y mostrar bienvenida
-  clearHistoryAndStart();
+  // Iniciar: limpiar completamente el chat (sin historial previo)
+  clearChatCompletely();
 </script>
 </body>
 </html>
