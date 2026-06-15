@@ -107,8 +107,10 @@ El Worker permanece inalterado.
 
 ---
 
-Enlace de la app: https://astro-chatbot--dianaml76.replit.app
+## Enlace de la app: https://astro-chatbot--dianaml76.replit.app
+## Enlace web: https://dianaml76-art.github.io/astro-chatbot/
 
+---
 
 ## Desarrollado con ❤️ para la comunidad educativa.
 
