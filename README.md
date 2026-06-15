@@ -107,6 +107,9 @@ El Worker permanece inalterado.
 
 ---
 
+Enlace de la app: https://astro-chatbot--dianaml76.replit.app
+
+
 ## Desarrollado con ❤️ para la comunidad educativa.
 
 ## 🔭 El conocimiento del universo al alcance de todos, gratis y sin barreras.
